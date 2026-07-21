@@ -1,0 +1,94 @@
+<% const rol = usuario ? usuario.rol : ''; %>
+
+<div class="content">
+  <div class="home-wrapper">
+
+    <div class="home-hero" data-aos="fade-down">
+      <div data-aos="fade-right" data-aos-delay="120">
+        <span class="home-badge">Sistema Administrativo</span>
+        <h2>Bienvenido a ASCOPA</h2>
+        <p>
+          Plataforma para gestionar estudiantes, expedientes, encargados,
+          empleados, facturación y reportes de la asociación.
+        </p>
+      </div>
+
+      <img
+        src="/images/logo-ascopa.png"
+        alt="Logo ASCOPA"
+        class="home-logo home-logo-animated"
+        data-aos="zoom-in"
+        data-aos-delay="250"
+      >
+    </div>
+
+    <div class="home-grid">
+
+      <% if (rol === 'Administrador' || rol === 'Profesor') { %>
+
+        <a href="/expedientes/dashboard" class="home-module-card" data-aos="fade-up" data-aos-delay="100">
+          <div class="home-icon">
+            <i class="fa fa-users"></i>
+          </div>
+          <h5>Estudiantes</h5>
+          <p>Consulta estudiantes, horarios, becas y estado general.</p>
+        </a>
+
+        <a href="/expedientes" class="home-module-card" data-aos="fade-up" data-aos-delay="180">
+          <div class="home-icon">
+            <i class="fa fa-folder-open"></i>
+          </div>
+          <h5>Expedientes</h5>
+          <p>Consulta y actualiza información de los expedientes estudiantiles.</p>
+        </a>
+
+        <a href="/encargados" class="home-module-card" data-aos="fade-up" data-aos-delay="260">
+          <div class="home-icon">
+            <i class="fa fa-id-card"></i>
+          </div>
+          <h5>Encargados</h5>
+          <p>Consulta los encargados asignados a cada estudiante.</p>
+        </a>
+
+      <% } %>
+
+      <% if (rol === 'Administrador') { %>
+
+        <a href="/facturacion" class="home-module-card" data-aos="fade-up" data-aos-delay="340">
+          <div class="home-icon">
+            <i class="fa fa-money"></i>
+          </div>
+          <h5>Facturación</h5>
+          <p>Administra cheques, facturas, saldos y reportes contables.</p>
+        </a>
+
+        <a href="/empleados" class="home-module-card" data-aos="fade-up" data-aos-delay="420">
+          <div class="home-icon">
+            <i class="fa fa-briefcase"></i>
+          </div>
+          <h5>Empleados</h5>
+          <p>Gestiona el personal de la asociación.</p>
+        </a>
+
+        <a href="/reportes" class="home-module-card" data-aos="fade-up" data-aos-delay="500">
+          <div class="home-icon">
+            <i class="fa fa-bar-chart"></i>
+          </div>
+          <h5>Reportes</h5>
+          <p>Visualiza indicadores y exporta reportes en PDF o Excel.</p>
+        </a>
+
+        <a href="/usuarios" class="home-module-card" data-aos="fade-up" data-aos-delay="580">
+          <div class="home-icon">
+            <i class="fa fa-user"></i>
+          </div>
+          <h5>Usuarios</h5>
+          <p>Administra usuarios, roles y permisos del sistema.</p>
+        </a>
+
+      <% } %>
+
+    </div>
+
+  </div>
+</div>

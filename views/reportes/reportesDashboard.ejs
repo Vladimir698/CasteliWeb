@@ -1,0 +1,288 @@
+<div class="content">
+  <div class="row">
+
+    <div class="col-12">
+      <div class="reports-hero" data-aos="fade-down">
+        <div>
+          <h3 class="mb-1">Centro de Reportes</h3>
+          <p class="text-muted mb-0">
+            Visualización general de estudiantes, empleados, caja chica, facturas y pagos mensuales
+          </p>
+        </div>
+
+        <div data-aos="zoom-in" data-aos-delay="180">
+          <a href="/reportes/pdf" class="btn btn-danger btn-round report-action-btn">
+            <i class="fa fa-file-pdf-o"></i> PDF
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div id="reportStats" class="col-12 reports-stats" data-aos="fade-up" data-aos-delay="100"></div>
+
+    <div class="col-12 col-lg-6">
+      <div class="report-card report-card-small" data-aos="fade-right" data-aos-delay="160">
+        <h5>Estado de estudiantes</h5>
+        <div class="chart-small-wrap">
+          <canvas id="chartEstadoEstudiantes"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+      <div class="report-card report-card-small" data-aos="fade-left" data-aos-delay="220">
+        <h5>Horarios registrados</h5>
+        <div class="chart-small-wrap">
+          <canvas id="chartHorarios"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-7">
+      <div class="report-card" data-aos="fade-up" data-aos-delay="280">
+        <h5>Facturación por caja chica</h5>
+        <canvas id="chartFacturasCheque"></canvas>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-5">
+      <div class="report-card" data-aos="fade-up" data-aos-delay="340">
+        <h5>Lectura rápida</h5>
+        <div id="lecturaRapida"></div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+      <div class="report-card" data-aos="fade-up" data-aos-delay="400">
+        <h5>Estudiantes inactivos</h5>
+        <div id="listaInactivos"></div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+      <div class="report-card" data-aos="fade-up" data-aos-delay="460">
+        <h5>Estudiantes con beca</h5>
+        <div id="listaBecados"></div>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <div class="report-card" data-aos="fade-up" data-aos-delay="520">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <h5 class="mb-0">Encargados con pagos pendientes</h5>
+            <small class="text-muted">Meses del año actual que no registran pago</small>
+          </div>
+        </div>
+
+        <div id="listaEncargadosMorosos"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script id="datos-reportes" type="application/json"><%- datosJson %></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  const datos = JSON.parse(document.getElementById('datos-reportes').textContent);
+  const r = datos.resumen;
+
+  function money(valor) {
+    return `CRC ${Number(valor || 0).toLocaleString('es-CR')}`;
+  }
+
+  document.getElementById('reportStats').innerHTML = `
+    <div class="report-stat-card report-stat-animated">
+      <span>Estudiantes</span>
+      <strong>${r.totalEstudiantes}</strong>
+      <small>${r.estudiantesActivos} activos / ${r.estudiantesInactivos} inactivos</small>
+    </div>
+
+    <div class="report-stat-card report-stat-animated">
+      <span>Becados</span>
+      <strong>${r.estudiantesBecados}</strong>
+      <small>Estudiantes con beca registrada</small>
+    </div>
+
+    <div class="report-stat-card report-stat-animated">
+      <span>Empleados</span>
+      <strong>${r.totalEmpleados}</strong>
+      <small>Personal registrado</small>
+    </div>
+
+    <div class="report-stat-card report-stat-animated">
+      <span>Saldo</span>
+      <strong>${money(r.saldoDisponible)}</strong>
+      <small>Disponible en caja chica</small>
+    </div>
+
+    <div class="report-stat-card report-stat-animated">
+      <span>Encargados Pedientes de Pago</span>
+      <strong>${r.encargadosMorosos}</strong>
+      <small>Encargados con pagos pendientes</small>
+    </div>
+  `;
+
+  document.getElementById('lecturaRapida').innerHTML = `
+    <div class="quick-report-item quick-report-animated">
+      <strong>${r.estudiantesInactivos}</strong>
+      <span>estudiantes inactivos requieren revisión.</span>
+    </div>
+
+    <div class="quick-report-item quick-report-animated">
+      <strong>${r.estudiantesBecados}</strong>
+      <span>estudiantes tienen beca registrada.</span>
+    </div>
+
+    <div class="quick-report-item quick-report-animated">
+      <strong>${r.estudiantesSinHorario}</strong>
+      <span>estudiantes no tienen horario registrado.</span>
+    </div>
+
+    <div class="quick-report-item quick-report-animated">
+      <strong>${money(r.totalFacturas)}</strong>
+      <span>registrados como gastos.</span>
+    </div>
+
+    <div class="quick-report-item quick-report-animated">
+      <strong>${r.encargadosMorosos}</strong>
+      <span>encargados tienen pagos pendientes.</span>
+    </div>
+  `;
+
+  const listaInactivos = datos.estudiantesInactivosLista || [];
+  const listaBecados = datos.estudiantesBecadosLista || [];
+  const listaEncargadosMorosos = datos.encargadosMorosos || [];
+
+  document.getElementById('listaInactivos').innerHTML = listaInactivos.length === 0
+    ? `<div class="text-muted report-empty-state">No hay estudiantes inactivos registrados.</div>`
+    : listaInactivos.map(e => `
+        <div class="quick-report-item quick-report-animated">
+          <strong>${e.nombreCompleto}</strong><br>
+          <span>Cédula: ${e.cedula || '-'} | Horario: ${e.horario || 'Sin horario registrado'}</span>
+        </div>
+      `).join('');
+
+  document.getElementById('listaBecados').innerHTML = listaBecados.length === 0
+    ? `<div class="text-muted report-empty-state">No hay estudiantes con beca registrados.</div>`
+    : listaBecados.map(e => `
+        <div class="quick-report-item quick-report-animated">
+          <strong>${e.nombreCompleto}</strong><br>
+          <span>Cédula: ${e.cedula || '-'} | Horario: ${e.horario || 'Sin horario registrado'}</span>
+        </div>
+      `).join('');
+
+  document.getElementById('listaEncargadosMorosos').innerHTML = listaEncargadosMorosos.length === 0
+    ? `<div class="text-muted report-empty-state">Todos los encargados tienen sus pagos al día.</div>`
+    : listaEncargadosMorosos.map(e => `
+        <div class="moroso-report-card quick-report-animated">
+          <div class="moroso-header">
+            <div>
+              <strong>${e.encargado}</strong>
+              <span>Encargado de: ${e.estudiante}</span>
+            </div>
+
+            <div class="moroso-contacto">
+              <small>Cédula: ${e.cedulaEncargado}</small>
+              <small>Tel: ${e.telefono}</small>
+              <small>Correo: ${e.correo}</small>
+            </div>
+          </div>
+
+          <div class="moroso-meses">
+            ${e.mesesPendientes.map(m => `
+              <span class="moroso-mes-chip">
+                <i class="fa fa-exclamation-circle"></i>
+                ${m.mes}
+              </span>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+
+  new Chart(document.getElementById('chartEstadoEstudiantes'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Activos', 'Inactivos'],
+      datasets: [{
+        data: [r.estudiantesActivos, r.estudiantesInactivos],
+        backgroundColor: ['#51c6ca', '#ef5350']
+      }]
+    },
+    options: {
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom'
+        }
+      }
+    }
+  });
+
+  new Chart(document.getElementById('chartHorarios'), {
+    type: 'pie',
+    data: {
+      labels: ['Con horario', 'Sin horario'],
+      datasets: [{
+        data: [r.estudiantesConHorario, r.estudiantesSinHorario],
+        backgroundColor: ['#224a9b', '#ffd166']
+      }]
+    },
+    options: {
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom'
+        }
+      }
+    }
+  });
+
+  new Chart(document.getElementById('chartFacturasCheque'), {
+    type: 'bar',
+    data: {
+      labels: datos.facturasPorCheque.map(c => `Entero ${c.cheque}`),
+      datasets: [
+        {
+          label: 'Caja chica',
+          data: datos.facturasPorCheque.map(c => c.monto),
+          backgroundColor: '#224a9b'
+        },
+        {
+          label: 'Cancelado',
+          data: datos.facturasPorCheque.map(c => c.gastado),
+          backgroundColor: '#51c6ca'
+        },
+        {
+          label: 'Saldo',
+          data: datos.facturasPorCheque.map(c => c.saldo),
+          backgroundColor: '#ffd166'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
+
+  setTimeout(() => {
+    document.querySelectorAll('.report-stat-animated, .quick-report-animated').forEach((el, index) => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(12px)';
+
+      setTimeout(() => {
+        el.style.transition = '.35s ease';
+        el.style.opacity = '1';
+        el.style.transform = 'translateY(0)';
+      }, index * 70);
+    });
+  }, 100);
+</script>

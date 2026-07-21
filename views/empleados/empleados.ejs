@@ -1,0 +1,426 @@
+<div class="content">
+  <div class="row">
+
+    <div class="col-12">
+      <div class="employees-hero-card" data-aos="fade-down">
+        <div>
+          <h3 class="mb-1">Empleados</h3>
+          <p class="text-muted mb-0">Gestión del personal de la asociación</p>
+        </div>
+
+        <button class="btn btn-primary btn-round employee-action-btn" data-toggle="modal" data-target="#modalEmpleadoCrear" data-aos="zoom-in" data-aos-delay="160">
+          <i class="fa fa-plus"></i> Registrar empleado
+        </button>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-4">
+      <div class="stat-card employee-stat-animated" data-aos="fade-up" data-aos-delay="100">
+        <span>Total</span>
+        <h2 id="totalEmpleados">0</h2>
+        <small>Empleados registrados</small>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-8">
+      <div class="filters-card employee-filter-animated" data-aos="fade-up" data-aos-delay="180">
+        <label class="filter-label">Buscar empleado</label>
+        <input
+          type="text"
+          id="buscarEmpleado"
+          class="form-control"
+          placeholder="Buscar por nombre, cédula, ocupación o especialidad..."
+        >
+      </div>
+    </div>
+
+    <div class="col-12">
+      <div id="empleadosGrid" class="employees-grid"></div>
+
+      <div id="emptyEmpleadoState" class="empty-state d-none">
+        <i class="fa fa-search fa-2x mb-3 employee-empty-icon"></i>
+        <h5>No se encontraron empleados</h5>
+        <p class="text-muted">Prueba cambiando el texto de búsqueda.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal Crear -->
+<div class="modal fade modal-modern" id="modalEmpleadoCrear" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content modal-modern-content emp-modal-soft">
+
+      <div class="modal-header modal-modern-header">
+        <div>
+          <h5 class="modal-title mb-0">Registrar empleado</h5>
+          <small class="text-muted">Complete la información del empleado</small>
+        </div>
+
+        <button type="button" class="close modal-modern-close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+
+      <form method="POST" action="/empleados/nuevo">
+        <div class="modal-body modal-modern-body">
+          <div class="row">
+            <div class="col-md-4">
+              <div class="form-group">
+                <label>Cédula</label>
+                <input name="cedula" class="form-control" required>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="form-group">
+                <label>Nombre</label>
+                <input name="nombre" class="form-control" required>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="form-group">
+                <label>Apellidos</label>
+                <input name="apellidos" class="form-control" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Ocupación</label>
+                <input name="ocupacion" class="form-control" placeholder="Ej: Docente, Asistente, Administrador">
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Especialidad</label>
+                <input name="especialidad" class="form-control" placeholder="Ej: Educación especial, Terapia, Administración">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer modal-modern-footer">
+          <button type="button" class="btn btn-outline-secondary btn-round" data-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary btn-round">
+            <i class="fa fa-save"></i> Guardar
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar -->
+<div class="modal fade modal-modern" id="modalEmpleadoEditar" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content modal-modern-content emp-modal-soft">
+
+      <div class="modal-header modal-modern-header">
+        <div>
+          <h5 class="modal-title mb-0">Editar empleado</h5>
+          <small class="text-muted" id="editarEmpleadoNombre"></small>
+        </div>
+
+        <button type="button" class="close modal-modern-close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+
+      <form method="POST" id="formEditarEmpleado">
+        <div class="modal-body modal-modern-body">
+          <div class="row">
+            <div class="col-md-4">
+              <div class="form-group">
+                <label>Cédula</label>
+                <input name="cedula" id="editCedula" class="form-control" required>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="form-group">
+                <label>Nombre</label>
+                <input name="nombre" id="editNombre" class="form-control" required>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="form-group">
+                <label>Apellidos</label>
+                <input name="apellidos" id="editApellidos" class="form-control" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Ocupación</label>
+                <input name="ocupacion" id="editOcupacion" class="form-control">
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Especialidad</label>
+                <input name="especialidad" id="editEspecialidad" class="form-control">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer modal-modern-footer">
+          <button type="button" class="btn btn-outline-secondary btn-round" data-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary btn-round">
+            <i class="fa fa-save"></i> Guardar cambios
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal previo eliminar -->
+<div class="modal fade" id="modalEmpleadoEliminar" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content emp-delete-modal">
+
+      <div class="emp-delete-top">
+        <div class="emp-delete-icon">
+          <i class="fa fa-user-times"></i>
+        </div>
+
+        <button type="button" class="close modal-modern-close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body text-center">
+        <h4>¿Eliminar empleado?</h4>
+        <p class="text-muted mb-0">
+          El registro de <strong id="deleteEmpleadoNombre">Empleado</strong> será eliminado del sistema.
+        </p>
+      </div>
+
+      <div class="modal-footer justify-content-center border-0 pt-0">
+        <button type="button" class="btn btn-outline-secondary btn-round" data-dismiss="modal">
+          Cancelar
+        </button>
+
+        <form method="POST" id="formEliminarEmpleado" style="margin:0;">
+          <button type="submit" class="btn btn-danger btn-round">
+            <i class="fa fa-trash"></i> Sí, eliminar
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal resultado creación / edición / eliminación -->
+<div class="modal fade" id="modalResultadoEmpleado" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content emp-result-modal">
+
+      <div class="emp-result-icon" id="empResultIcon">
+        <i class="fa fa-check"></i>
+      </div>
+
+      <div class="modal-body text-center">
+        <h4 id="empResultTitle">Acción realizada</h4>
+        <p class="text-muted mb-0" id="empResultText">
+          La operación se completó correctamente.
+        </p>
+      </div>
+
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-primary btn-round" data-dismiss="modal">
+          Entendido
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script id="empleados-json" type="application/json"><%- empleadosJson %></script>
+
+<script>
+  const empleadosData = JSON.parse(
+    document.getElementById('empleados-json').textContent
+  );
+
+  const grid = document.getElementById('empleadosGrid');
+  const emptyState = document.getElementById('emptyEmpleadoState');
+  const buscarEmpleado = document.getElementById('buscarEmpleado');
+  const totalEmpleados = document.getElementById('totalEmpleados');
+
+  function renderEmpleados() {
+    let lista = [...empleadosData];
+    const texto = buscarEmpleado.value.toLowerCase().trim();
+
+    if (texto) {
+      lista = lista.filter(e =>
+        String(e.cedula || '').toLowerCase().includes(texto) ||
+        String(e.nombre || '').toLowerCase().includes(texto) ||
+        String(e.apellidos || '').toLowerCase().includes(texto) ||
+        String(e.ocupacion || '').toLowerCase().includes(texto) ||
+        String(e.especialidad || '').toLowerCase().includes(texto)
+      );
+    }
+
+    lista.sort((a, b) =>
+      `${a.nombre} ${a.apellidos}`.localeCompare(`${b.nombre} ${b.apellidos}`)
+    );
+
+    totalEmpleados.textContent = empleadosData.length;
+    grid.innerHTML = '';
+
+    if (lista.length === 0) {
+      emptyState.classList.remove('d-none');
+      return;
+    }
+
+    emptyState.classList.add('d-none');
+
+    lista.forEach((e, index) => {
+      const iniciales = `${(e.nombre || 'E').charAt(0)}${(e.apellidos || '').charAt(0)}`;
+
+      const card = document.createElement('div');
+      card.className = 'employee-card employee-card-animated';
+      card.setAttribute('data-aos', 'fade-up');
+      card.setAttribute('data-aos-delay', String(100 + index * 80));
+
+      card.innerHTML = `
+        <div class="employee-card-header">
+          <div class="employee-avatar employee-avatar-animated">${iniciales}</div>
+
+          <div class="employee-main-info">
+            <h5>${e.nombre || ''} ${e.apellidos || ''}</h5>
+            <span>${e.cedula || 'Sin cédula'}</span>
+          </div>
+        </div>
+
+        <div class="employee-info-grid">
+          <div>
+            <small>Ocupación</small>
+            <strong>${e.ocupacion || 'Sin ocupación'}</strong>
+          </div>
+
+          <div>
+            <small>Especialidad</small>
+            <strong>${e.especialidad || 'Sin especialidad'}</strong>
+          </div>
+        </div>
+
+        <div class="employee-actions">
+          <button
+            type="button"
+            class="btn btn-sm btn-info btn-round btn-editar-empleado employee-action-btn"
+            data-id="${e.id}"
+            data-cedula="${e.cedula || ''}"
+            data-nombre="${e.nombre || ''}"
+            data-apellidos="${e.apellidos || ''}"
+            data-ocupacion="${e.ocupacion || ''}"
+            data-especialidad="${e.especialidad || ''}"
+          >
+            <i class="fa fa-pencil"></i> Editar
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-danger btn-round btn-eliminar-empleado employee-action-btn"
+            data-id="${e.id}"
+            data-nombre="${e.nombre || ''} ${e.apellidos || ''}"
+          >
+            <i class="fa fa-trash"></i> Eliminar
+          </button>
+        </div>
+      `;
+
+      grid.appendChild(card);
+    });
+
+    if (window.AOS) AOS.refresh();
+  }
+
+  function mostrarModalResultadoEmpleado() {
+    const params = new URLSearchParams(window.location.search);
+    const msg = params.get('msg');
+
+    if (!msg) return;
+
+    const icon = document.getElementById('empResultIcon');
+    const title = document.getElementById('empResultTitle');
+    const text = document.getElementById('empResultText');
+
+    if (msg === 'creado') {
+      icon.className = 'emp-result-icon emp-result-created';
+      icon.innerHTML = '<i class="fa fa-user-plus"></i>';
+      title.textContent = 'Empleado registrado';
+      text.textContent = 'El empleado fue agregado correctamente al sistema.';
+    }
+
+    if (msg === 'actualizado') {
+      icon.className = 'emp-result-icon emp-result-updated';
+      icon.innerHTML = '<i class="fa fa-pencil"></i>';
+      title.textContent = 'Empleado actualizado';
+      text.textContent = 'Los datos del empleado fueron modificados correctamente.';
+    }
+
+    if (msg === 'eliminado') {
+      icon.className = 'emp-result-icon emp-result-deleted';
+      icon.innerHTML = '<i class="fa fa-trash"></i>';
+      title.textContent = 'Empleado eliminado';
+      text.textContent = 'El registro del empleado fue eliminado del sistema.';
+    }
+
+    $('#modalResultadoEmpleado').modal('show');
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+
+  buscarEmpleado.addEventListener('input', renderEmpleados);
+
+  document.addEventListener('click', function (e) {
+    const btnEditar = e.target.closest('.btn-editar-empleado');
+
+    if (btnEditar) {
+      const id = btnEditar.dataset.id;
+
+      document.getElementById('formEditarEmpleado').action = `/empleados/${id}/editar`;
+      document.getElementById('editarEmpleadoNombre').textContent =
+        `${btnEditar.dataset.nombre} ${btnEditar.dataset.apellidos}`;
+
+      document.getElementById('editCedula').value = btnEditar.dataset.cedula;
+      document.getElementById('editNombre').value = btnEditar.dataset.nombre;
+      document.getElementById('editApellidos').value = btnEditar.dataset.apellidos;
+      document.getElementById('editOcupacion').value = btnEditar.dataset.ocupacion;
+      document.getElementById('editEspecialidad').value = btnEditar.dataset.especialidad;
+
+      $('#modalEmpleadoEditar').modal('show');
+      return;
+    }
+
+    const btnEliminar = e.target.closest('.btn-eliminar-empleado');
+
+    if (btnEliminar) {
+      const id = btnEliminar.dataset.id;
+
+      document.getElementById('formEliminarEmpleado').action = `/empleados/${id}/eliminar`;
+      document.getElementById('deleteEmpleadoNombre').textContent = btnEliminar.dataset.nombre;
+
+      $('#modalEmpleadoEliminar').modal('show');
+    }
+  });
+
+  renderEmpleados();
+  mostrarModalResultadoEmpleado();
+</script>

@@ -1,0 +1,420 @@
+<div class="content">
+  <div class="row">
+
+    <div class="col-12">
+      <div class="students-hero-card" data-aos="fade-down">
+        <div>
+          <h3 class="mb-1">Caja chica</h3>
+          <p class="text-muted mb-0">Control mensual de enteros, saldo disponible y facturas canceladas</p>
+        </div>
+
+        <div data-aos="zoom-in" data-aos-delay="160">
+          <button class="btn btn-primary btn-round factura-action-btn" data-toggle="modal" data-target="#modalCheque">
+            <i class="fa fa-plus"></i> Registrar entero
+          </button>
+
+          <a href="/facturacion/reporte/pdf" class="btn btn-outline-primary btn-round factura-action-btn">
+            <i class="fa fa-file-pdf-o"></i> Exportar PDF
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <div class="card fact-panel-card" data-aos="fade-up" data-aos-delay="100">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Seleccione el mes</h4>
+          <p class="card-category mb-0">Al seleccionar un mes se mostrarán únicamente los enteros y facturas registrados en ese periodo</p>
+        </div>
+
+        <div class="card-body">
+          <div id="mesesGrid" class="meses-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-5">
+      <div class="card fact-panel-card" data-aos="fade-right" data-aos-delay="160">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Enteros registrados</h4>
+          <p class="card-category mb-0" id="mesSeleccionadoTexto">Seleccione un mes</p>
+        </div>
+
+        <div class="card-body">
+          <div id="chequesList" class="cheque-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-7">
+      <div class="card fact-panel-card" data-aos="fade-left" data-aos-delay="220">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <div>
+            <h4 class="card-title mb-0">Facturas canceladas</h4>
+            <p class="card-category mb-0" id="chequeSeleccionadoTxt">Seleccione un entero</p>
+          </div>
+
+          <button class="btn btn-primary btn-round factura-action-btn" id="btnNuevaFactura" disabled>
+            <i class="fa fa-plus"></i> Registrar factura
+          </button>
+        </div>
+
+        <div class="card-body" id="facturasWrap" style="min-height:260px;">
+          <div class="text-center text-muted py-5 fact-empty-state">
+            <i class="fa fa-money fa-2x mb-3"></i>
+            <p>Seleccione un mes y luego un entero para visualizar sus facturas.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal caja chica -->
+<div class="modal fade modal-modern" id="modalCheque" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content modal-modern-content">
+      <div class="modal-header modal-modern-header">
+        <h5 class="modal-title">Registrar entero de caja chica</h5>
+        <button type="button" class="close modal-modern-close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+
+      <form method="POST" action="/facturacion/cheques">
+        <div class="modal-body modal-modern-body">
+
+          <div class="form-group">
+            <label>Mes</label>
+            <select name="mes" id="mesCajaChica" class="form-control" required>
+              <option value="">Seleccione...</option>
+              <option value="1">Enero</option>
+              <option value="2">Febrero</option>
+              <option value="3">Marzo</option>
+              <option value="4">Abril</option>
+              <option value="5">Mayo</option>
+              <option value="6">Junio</option>
+              <option value="7">Julio</option>
+              <option value="8">Agosto</option>
+              <option value="9">Septiembre</option>
+              <option value="10">Octubre</option>
+              <option value="11">Noviembre</option>
+              <option value="12">Diciembre</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Número de entero</label>
+            <input name="numero_cheque" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label>Responsable</label>
+            <input name="proveedor" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label>Motivo</label>
+            <input name="motivo" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label>Monto de caja chica</label>
+            <input name="monto" type="number" step="0.01" min="1" class="form-control" required>
+          </div>
+        </div>
+
+        <div class="modal-footer modal-modern-footer">
+          <button type="button" class="btn btn-outline-secondary btn-round" data-dismiss="modal">Cancelar</button>
+          <button class="btn btn-primary btn-round">Guardar entero</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal factura -->
+<div class="modal fade modal-modern" id="modalFactura" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content modal-modern-content">
+      <div class="modal-header modal-modern-header">
+        <div>
+          <h5 class="modal-title">Registrar factura cancelada</h5>
+          <small class="text-muted" id="facturaChequeInfo"></small>
+        </div>
+
+        <button type="button" class="close modal-modern-close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+
+      <form method="POST" action="/facturacion/facturas">
+        <input type="hidden" name="cheque_id" id="facturaChequeId">
+        <input type="hidden" name="mes" id="facturaMes">
+
+        <div class="modal-body modal-modern-body">
+          <div class="form-group">
+            <label>Número de factura</label>
+            <input name="numero_factura" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label>Proveedor</label>
+            <input name="proveedor" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label>Monto cancelado</label>
+            <input name="monto" type="number" step="0.01" min="1" class="form-control" required>
+          </div>
+        </div>
+
+        <div class="modal-footer modal-modern-footer">
+          <button type="button" class="btn btn-outline-secondary btn-round" data-dismiss="modal">Cancelar</button>
+          <button class="btn btn-primary btn-round">Guardar factura</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script id="cheques-json" type="application/json"><%- chequesJson %></script>
+<script id="facturas-json" type="application/json"><%- facturasJson %></script>
+
+<script>
+  const chequesData = JSON.parse(document.getElementById('cheques-json').textContent);
+  const facturasData = JSON.parse(document.getElementById('facturas-json').textContent);
+
+  const meses = [
+    { id: 1, nombre: 'Enero' },
+    { id: 2, nombre: 'Febrero' },
+    { id: 3, nombre: 'Marzo' },
+    { id: 4, nombre: 'Abril' },
+    { id: 5, nombre: 'Mayo' },
+    { id: 6, nombre: 'Junio' },
+    { id: 7, nombre: 'Julio' },
+    { id: 8, nombre: 'Agosto' },
+    { id: 9, nombre: 'Septiembre' },
+    { id: 10, nombre: 'Octubre' },
+    { id: 11, nombre: 'Noviembre' },
+    { id: 12, nombre: 'Diciembre' }
+  ];
+
+  let mesSeleccionado = null;
+  let chequeSeleccionado = null;
+
+  const mesesGrid = document.getElementById('mesesGrid');
+  const chequesList = document.getElementById('chequesList');
+  const facturasWrap = document.getElementById('facturasWrap');
+  const btnNuevaFactura = document.getElementById('btnNuevaFactura');
+
+  function money(value) {
+    return `₡${Number(value || 0).toLocaleString('es-CR')}`;
+  }
+
+  function obtenerMesRegistro(registro) {
+    return registro.mes ? Number(registro.mes) : new Date().getMonth() + 1;
+  }
+
+  function renderMeses() {
+    mesesGrid.innerHTML = '';
+
+    meses.forEach((m, index) => {
+      const enterosMes = chequesData.filter(ch => obtenerMesRegistro(ch) === Number(m.id));
+
+      const facturasMes = facturasData.filter(f => {
+        const entero = chequesData.find(ch => Number(ch.id) === Number(f.cheque_id));
+        if (!entero) return false;
+        return obtenerMesRegistro(entero) === Number(m.id);
+      });
+
+      const totalMes = enterosMes.reduce((acc, ch) => acc + Number(ch.monto || 0), 0);
+      const canceladoMes = facturasMes.reduce((acc, f) => acc + Number(f.monto || 0), 0);
+      const disponibleMes = totalMes - canceladoMes;
+
+      const card = document.createElement('div');
+      card.className = 'mes-card';
+      card.dataset.mes = m.id;
+      card.setAttribute('data-aos', 'fade-up');
+      card.setAttribute('data-aos-delay', String(80 + index * 40));
+
+      card.innerHTML = `
+        <strong>${m.nombre}</strong>
+        <span>${enterosMes.length} enteros</span>
+        <small>Disponible: ${money(disponibleMes)}</small>
+      `;
+
+      mesesGrid.appendChild(card);
+    });
+
+    if (window.AOS) AOS.refresh();
+  }
+
+  function renderEnterosPorMes(mes) {
+    mesSeleccionado = Number(mes);
+    chequeSeleccionado = null;
+    btnNuevaFactura.disabled = true;
+
+    const mesNombre = meses.find(m => m.id === mesSeleccionado)?.nombre || '';
+
+    document.getElementById('mesSeleccionadoTexto').textContent = `Mes seleccionado: ${mesNombre}`;
+    document.getElementById('chequeSeleccionadoTxt').textContent = 'Seleccione un entero';
+
+    facturasWrap.innerHTML = `
+      <div class="text-center text-muted py-5 fact-empty-state">
+        <i class="fa fa-file-text-o fa-2x mb-3"></i>
+        <p>Seleccione un entero para ver sus facturas canceladas.</p>
+      </div>
+    `;
+
+    chequesList.innerHTML = '';
+
+    const enteros = chequesData.filter(ch => obtenerMesRegistro(ch) === mesSeleccionado);
+
+    if (enteros.length === 0) {
+      chequesList.innerHTML = `
+        <div class="text-center text-muted py-4 fact-empty-state">
+          <i class="fa fa-exclamation-circle fa-2x mb-2"></i>
+          <p>No hay enteros registrados para este mes.</p>
+        </div>
+      `;
+      return;
+    }
+
+    enteros.forEach((ch, index) => {
+      const div = document.createElement('div');
+      div.className = 'cheque-card cheque-card-animated';
+      div.dataset.id = ch.id;
+      div.setAttribute('data-aos', 'fade-up');
+      div.setAttribute('data-aos-delay', String(100 + index * 70));
+
+      div.innerHTML = `
+        <div class="d-flex justify-content-between">
+          <div>
+            <strong>Entero #${ch.numero_cheque}</strong>
+            <p class="mb-0 text-muted">${ch.motivo || 'Sin motivo'}</p>
+          </div>
+          <span class="status-pill ${ch.saldo > 0 ? 'status-active' : 'status-inactive'}">
+            ${ch.saldo > 0 ? 'Disponible' : 'Sin saldo'}
+          </span>
+        </div>
+
+        <div class="cheque-balance">
+          <div><span>Caja chica</span><strong>${money(ch.monto)}</strong></div>
+          <div><span>Cancelado</span><strong>${money(ch.gastado)}</strong></div>
+          <div><span>Disponible</span><strong>${money(ch.saldo)}</strong></div>
+        </div>
+      `;
+
+      chequesList.appendChild(div);
+    });
+
+    if (window.AOS) AOS.refresh();
+  }
+
+  function renderFacturas(enteroId) {
+    const ch = chequesData.find(c => Number(c.id) === Number(enteroId));
+    chequeSeleccionado = ch;
+
+    if (!ch) return;
+
+    document.getElementById('chequeSeleccionadoTxt').textContent =
+      `Entero #${ch.numero_cheque} | Saldo disponible: ${money(ch.saldo)}`;
+
+    btnNuevaFactura.disabled = ch.saldo <= 0;
+
+    const facturas = facturasData.filter(f => Number(f.cheque_id) === Number(enteroId));
+
+    if (facturas.length === 0) {
+      facturasWrap.innerHTML = `
+        <div class="text-center text-muted py-5 fact-empty-state">
+          <i class="fa fa-file-text-o fa-2x mb-3"></i>
+          <p>Este entero todavía no tiene facturas canceladas.</p>
+        </div>
+      `;
+      return;
+    }
+
+    let totalFacturas = 0;
+
+    let html = `
+      <div class="factura-timeline">
+    `;
+
+    facturas.forEach((f) => {
+      totalFacturas += Number(f.monto || 0);
+
+      html += `
+        <div class="factura-item factura-item-animated">
+          <div class="factura-dot"></div>
+          <div class="factura-content">
+            <strong>Factura #${f.numero_factura}</strong>
+            <p class="mb-1 text-muted">${f.proveedor || 'Sin proveedor'}</p>
+            <span>${money(f.monto)}</span>
+          </div>
+        </div>
+      `;
+    });
+
+    html += `
+      </div>
+
+      <div class="factura-total-box mt-3">
+        <span>Total cancelado en este entero</span>
+        <strong>${money(totalFacturas)}</strong>
+      </div>
+    `;
+
+    facturasWrap.innerHTML = html;
+  }
+
+  document.addEventListener('click', function(e) {
+    const mesCard = e.target.closest('.mes-card');
+
+    if (mesCard) {
+      document.querySelectorAll('.mes-card').forEach(c => c.classList.remove('active'));
+      mesCard.classList.add('active');
+      renderEnterosPorMes(Number(mesCard.dataset.mes));
+      return;
+    }
+
+    const enteroCard = e.target.closest('.cheque-card');
+
+    if (enteroCard) {
+      document.querySelectorAll('.cheque-card').forEach(c => c.classList.remove('active'));
+      enteroCard.classList.add('active');
+      renderFacturas(enteroCard.dataset.id);
+    }
+  });
+
+  btnNuevaFactura.addEventListener('click', function() {
+    if (!chequeSeleccionado || !mesSeleccionado) return;
+
+    document.getElementById('facturaChequeId').value = chequeSeleccionado.id;
+    document.getElementById('facturaMes').value = mesSeleccionado;
+
+    document.getElementById('facturaChequeInfo').textContent =
+      `Entero #${chequeSeleccionado.numero_cheque} | Saldo disponible: ${money(chequeSeleccionado.saldo)}`;
+
+    $('#modalFactura').modal('show');
+  });
+
+  renderMeses();
+
+  setTimeout(() => {
+    const mesActual = new Date().getMonth() + 1;
+    const mesCardActual = document.querySelector(`.mes-card[data-mes="${mesActual}"]`);
+
+    if (mesCardActual) {
+      mesCardActual.classList.add('active');
+      renderEnterosPorMes(mesActual);
+    }
+
+    const selectMesCaja = document.getElementById('mesCajaChica');
+
+    if (selectMesCaja) {
+      selectMesCaja.value = mesActual;
+    }
+  }, 100);
+</script>

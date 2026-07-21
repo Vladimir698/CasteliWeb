@@ -1,0 +1,427 @@
+/* ===============================
+   BRAND TOKENS
+================================ */
+:root{
+  --brand-primary: #20448C;
+  --brand-info:    #9CD9D9;
+  --brand-success: #38A673;
+  --brand-warning: #F2A74B;
+  --brand-danger:  #D93232;
+
+  --brand-primary-soft: rgba(32, 68, 140, 0.08);
+  --brand-info-soft:    rgba(156, 217, 217, 0.25);
+}
+
+/* ===============================
+   LINKS
+================================ */
+a{
+  color: var(--brand-primary);
+}
+a:hover{
+  color: #17356D;
+}
+
+/* ===============================
+   BUTTONS
+================================ */
+.btn-primary{
+  background: var(--brand-primary);
+  border-color: var(--brand-primary);
+}
+.btn-primary:hover{
+  background: #17356D;
+  border-color: #17356D;
+}
+
+/* ===============================
+   SIDEBAR – BASE
+================================ */
+.sidebar{
+  width: 260px !important;
+}
+
+.main-panel{
+  width: calc(100% - 260px) !important;
+  float: right;
+}
+
+/* ===============================
+   SIDEBAR – OPCIONES PRINCIPALES
+================================ */
+.sidebar .nav > li > a{
+  letter-spacing: 0.5px;
+}
+
+.sidebar .nav > li > a p{
+  font-weight: 700;                 /* PRINCIPALES EN NEGRITA */
+  color: var(--brand-primary);
+}
+
+.sidebar .nav > li > a i.nc-icon{
+  color: var(--brand-primary);
+  opacity: 0.9;
+}
+
+/* Hover principales */
+.sidebar .nav > li > a:hover{
+  background: var(--brand-info-soft);
+  border-radius: 8px;
+}
+
+/* Activo principal */
+.sidebar .nav > li.active > a p{
+  font-weight: 800;
+}
+
+/* ===============================
+   SIDEBAR – SUBMENÚS (ESTUDIANTES)
+================================ */
+
+/* Contenedor del submenú */
+.sidebar .nav .collapse .nav{
+  padding-left: 18px; /* INDENT */
+  margin-top: 6px;
+  border-left: 2px solid rgba(32, 68, 140, 0.15);
+}
+
+/* Links del submenú */
+.sidebar .nav .collapse .nav li a{
+  padding-left: 16px !important;
+  margin-left: 6px;
+  opacity: 0.85;
+}
+
+/* Texto submenú */
+.sidebar .nav .collapse .nav li a .sidebar-normal{
+  font-weight: 500;
+  font-size: 12px;
+  color: rgba(0,0,0,0.55);
+  letter-spacing: 0.2px;
+}
+
+/* Iconos submenú */
+.sidebar .nav .collapse .nav li a i.nc-icon{
+  font-size: 14px;
+  color: rgba(0,0,0,0.45);
+  margin-right: 10px;
+}
+
+/* Hover submenú */
+.sidebar .nav .collapse .nav li a:hover{
+  background: rgba(32, 68, 140, 0.08);
+  border-radius: 8px;
+  opacity: 1;
+}
+
+/* Submenú activo */
+.sidebar .nav .collapse .nav li.active > a{
+  background: rgba(32, 68, 140, 0.12);
+  border-radius: 8px;
+}
+
+.sidebar .nav .collapse .nav li.active > a .sidebar-normal,
+.sidebar .nav .collapse .nav li.active > a i.nc-icon{
+  color: var(--brand-primary);
+  opacity: 1;
+}
+
+/* ===============================
+   ICONOS EN CARDS
+================================ */
+.card .icon.icon-warning{ color: var(--brand-warning); }
+.card .icon.icon-success{ color: var(--brand-success); }
+.card .icon.icon-danger{  color: var(--brand-danger); }
+.card .icon.icon-info{    color: var(--brand-info); }
+
+/* ===============================
+   INPUT FOCUS
+================================ */
+.form-control:focus{
+  border-color: var(--brand-info);
+  box-shadow: 0 0 0 0.15rem var(--brand-info-soft);
+}
+
+/* ===============================
+   MICRO INTERACTIONS
+================================ */
+.btn,
+.sidebar a,
+.card{
+  transition: all .18s ease-in-out;
+}
+
+/* ===============================
+   FIXES PAPER DASHBOARD
+================================ */
+
+/* Fix altura de contenido */
+.main-panel > .content{
+  min-height: calc(100vh - 123px) !important;
+}
+
+/* Asegura que el layout crezca */
+.wrapper{
+  min-height: 100vh;
+  height: auto !important;
+}
+
+/* Forzar color del icono en items con collapse (ej: Estudiantes) */
+.sidebar .nav > li > a[data-toggle="collapse"] i.nc-icon {
+  color: var(--brand-primary) !important;
+  opacity: 1;
+}
+
+/* Botón cuadrado (no redondo) */
+.btn-square {
+  border-radius: 6px;   /* elegante, no redondo */
+  padding: 10px 16px;
+}
+
+/* ===============================
+   CARD MÁS COMPACTO (Proveedores)
+   Aplica a cards con tablas (DataTables)
+================================ */
+
+/* Reduce el padding del card */
+.card .card-header {
+  padding: 16px 18px !important;
+}
+
+.card .card-body {
+  padding: 14px 18px 18px !important;
+}
+
+/* Reduce un poco el gap entre título y subtítulo */
+.card .card-header .card-title {
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  margin-bottom: 2px !important;
+}
+
+.card .card-header .card-category {
+  font-size: 13px !important;
+  opacity: 0.75;
+  margin-bottom: 0 !important;
+}
+
+/* ===============================
+   DATATABLES: CONTROLES MÁS LIMPIOS
+================================ */
+
+/* Controles (Mostrar / Buscar) compactos y alineados */
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter {
+  margin: 6px 0 12px !important;
+  font-size: 13px !important;
+}
+
+/* Inputs/select más estéticos */
+.dataTables_wrapper .dataTables_filter input {
+  border: 1px solid #e2e5ea;
+  border-radius: 6px;
+  padding: 6px 10px;
+  height: 34px;
+  outline: none;
+}
+
+.dataTables_wrapper .dataTables_length select {
+  border: 1px solid #e2e5ea;
+  border-radius: 6px;
+  padding: 4px 8px;
+  height: 34px;
+}
+
+/* Info y paginación más compactas */
+.dataTables_wrapper .dataTables_info {
+  font-size: 13px !important;
+  opacity: 0.85;
+  padding-top: 10px !important;
+}
+
+.dataTables_wrapper .dataTables_paginate {
+  padding-top: 6px !important;
+}
+
+/* Botones de paginación más pro */
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+  border-radius: 8px !important;
+  border: 1px solid #e2e5ea !important;
+  padding: 6px 10px !important;
+  margin-left: 6px !important;
+}
+
+/* ===============================
+   TABLA MÁS PRO + LETRA MÁS GRANDE
+================================ */
+
+/* Header de tabla */
+table.dataTable thead th {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  padding: 12px 14px !important;
+}
+
+/* Registros (tbody) más grandes y legibles */
+table.dataTable tbody td {
+  font-size: 16px !important;     /* <-- aquí sube la letra */
+  font-weight: 500;
+  padding: 14px 14px !important;  /* compacto pero con aire */
+  vertical-align: middle;
+}
+
+/* Hover más suave */
+table.dataTable tbody tr:hover {
+  background: rgba(156, 217, 217, 0.18) !important; /* tu brand-info soft */
+}
+
+/* Evita que la tabla tenga demasiado alto si hay pocos registros */
+.dataTables_wrapper .dataTables_scrollBody {
+  min-height: unset !important;
+}
+
+/* Por si tu card-body tenía min-height fijo en la vista */
+.card-body[style*="min-height"] {
+  min-height: auto !important;
+}
+/* ===============================
+   PROVEEDORES – TABLA COMPACTA
+================================ */
+
+/* Limitar ancho de la tabla */
+#tablaProveedores {
+  width: 100% !important;
+}
+
+/* Nombre: ocupa más espacio */
+#tablaProveedores thead th:nth-child(1),
+#tablaProveedores tbody td:nth-child(1) {
+  width: 65% !important;
+}
+
+/* Teléfono: más compacto */
+#tablaProveedores thead th:nth-child(2),
+#tablaProveedores tbody td:nth-child(2) {
+  width: 35% !important;
+  text-align: left;
+}
+
+/* Reduce padding horizontal (acerca columnas) */
+#tablaProveedores thead th,
+#tablaProveedores tbody td {
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+}
+
+/* Reduce altura de filas */
+#tablaProveedores tbody tr {
+  height: 48px;
+}
+
+/* Nombre un poco más destacado */
+#tablaProveedores tbody td:first-child {
+  font-weight: 600;
+}
+
+/* Centrado vertical correcto para vistas tipo formulario */
+.main-panel > .content {
+  min-height: calc(100vh - 123px); /* header + footer Paper */
+}
+
+/* ===============================
+   LAYOUT: footer abajo + contenido centrable
+================================ */
+
+/* Mantén tu ancho */
+.sidebar{
+  width: 260px !important;
+}
+
+.main-panel{
+  width: calc(100% - 260px) !important;
+  float: right;
+
+  /* ✅ clave: convertir a columna */
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 100vh !important;
+}
+
+/* ✅ el contenido ocupa el espacio disponible y empuja el footer abajo */
+.main-panel > .content{
+  flex: 1 1 auto !important;
+  min-height: 0 !important; /* importante en flex layouts */
+}
+
+/* ✅ footer siempre al fondo */
+.main-panel > footer,
+.main-panel .footer{
+  margin-top: auto !important;
+}
+
+/* ===============================
+   VISTA: centrar card (solo donde uses .page-center)
+================================ */
+.page-center{
+  min-height: 100% !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 0; /* respira arriba/abajo */
+}
+
+/* opcional: hacer el card un poco más compacto */
+.page-center .card{
+  margin: 0 !important;
+}
+
+/* ===============================
+   ACCIONES EN TABLAS
+================================ */
+.acciones-col {
+  width: 120px;
+  text-align: center;
+}
+
+.acciones-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px; /* separación entre íconos */
+}
+
+/* Botones solo icono */
+.btn-icon {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px; /* cuadrado elegante */
+}
+
+.btn-icon i {
+  font-size: 14px;
+}
+
+/* Acciones en tablas */
+.acciones-wrapper,
+.td-actions .d-inline-flex {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px; /* 🔹 separación entre iconos */
+}
+
+.logo {
+  padding: 10px 0;
+}
+
+.sidebar-logo {
+  max-width: 100px;
+  height: auto;
+  display: block;
+  margin: 5px auto;
+}

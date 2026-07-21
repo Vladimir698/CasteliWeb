@@ -1,0 +1,294 @@
+<div class="content">
+  <div class="card usuarios-main-card" data-aos="fade-up">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <div>
+        <h4 class="card-title mb-0">Usuarios</h4>
+        <p class="card-category mb-0">Gestión de usuarios y roles</p>
+      </div>
+
+      <button
+        class="btn btn-primary btn-round usuario-action-btn"
+        data-toggle="modal"
+        data-target="#modalCrearUsuario"
+        data-aos="zoom-in"
+        data-aos-delay="160"
+      >
+        <i class="fa fa-plus"></i> Crear usuario
+      </button>
+    </div>
+
+    <div class="card-body">
+      <table class="table table-hover usuarios-table">
+        <thead class="text-primary">
+          <tr>
+            <th>Nombre</th>
+            <th>Apellidos</th>
+            <th>Rol</th>
+            <th style="width:180px;">Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <% usuarios.forEach((u) => { %>
+            <tr class="usuario-row-animated">
+              <td><%= u.nombre %></td>
+              <td><%= u.apellidos %></td>
+              <td>
+                <span class="usuario-rol-pill"><%= u.rolNombre %></span>
+              </td>
+              <td>
+                <button
+                  class="btn btn-sm btn-info btn-editar-usuario usuario-icon-btn"
+                  data-id="<%= u.id %>"
+                  data-nombre="<%= u.nombre %>"
+                  data-apellidos="<%= u.apellidos %>"
+                  data-rol="<%= u.rol_id %>"
+                >
+                  <i class="fa fa-pencil"></i>
+                </button>
+
+                <button
+                  type="button"
+                  class="btn btn-sm btn-danger btn-eliminar-usuario usuario-icon-btn"
+                  data-id="<%= u.id %>"
+                  data-nombre="<%= u.nombre %> <%= u.apellidos %>"
+                >
+                  <i class="fa fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Crear usuario -->
+<div class="modal fade modal-modern" id="modalCrearUsuario" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content modal-modern-content usuario-modal-animated">
+      <form method="POST" action="/usuarios/nuevo">
+        <div class="modal-header modal-modern-header">
+          <div>
+            <h5 class="modal-title mb-0">Crear usuario</h5>
+            <small class="text-muted">Registrar acceso al sistema</small>
+          </div>
+
+          <button type="button" class="close modal-modern-close" data-dismiss="modal">
+            <span>&times;</span>
+          </button>
+        </div>
+
+        <div class="modal-body modal-modern-body">
+          <div class="form-group">
+            <label>Nombre</label>
+            <input name="nombre" class="form-control usuario-input" required>
+          </div>
+
+          <div class="form-group">
+            <label>Apellidos</label>
+            <input name="apellidos" class="form-control usuario-input" required>
+          </div>
+
+          <div class="form-group">
+            <label>Contraseña</label>
+            <input name="contrasenna" type="password" class="form-control usuario-input" required>
+          </div>
+
+          <div class="form-group">
+            <label>Rol</label>
+            <select name="rol_id" class="form-control usuario-input" required>
+              <% roles.forEach(r => { %>
+                <option value="<%= r.id %>"><%= r.rol %></option>
+              <% }) %>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-footer modal-modern-footer">
+          <button type="button" class="btn btn-outline-secondary btn-round" data-dismiss="modal">Cancelar</button>
+          <button class="btn btn-primary btn-round usuario-action-btn">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Editar usuario -->
+<div class="modal fade modal-modern" id="modalEditarUsuario" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content modal-modern-content usuario-modal-animated">
+      <form method="POST" id="formEditarUsuario">
+        <div class="modal-header modal-modern-header">
+          <div>
+            <h5 class="modal-title mb-0">Editar usuario</h5>
+            <small class="text-muted">Actualizar rol o datos de acceso</small>
+          </div>
+
+          <button type="button" class="close modal-modern-close" data-dismiss="modal">
+            <span>&times;</span>
+          </button>
+        </div>
+
+        <div class="modal-body modal-modern-body">
+          <div class="form-group">
+            <label>Nombre</label>
+            <input name="nombre" id="editNombre" class="form-control usuario-input" required>
+          </div>
+
+          <div class="form-group">
+            <label>Apellidos</label>
+            <input name="apellidos" id="editApellidos" class="form-control usuario-input" required>
+          </div>
+
+          <div class="form-group">
+            <label>Nueva contraseña</label>
+            <input name="contrasenna" type="password" class="form-control usuario-input" placeholder="Dejar vacío si no cambia">
+          </div>
+
+          <div class="form-group">
+            <label>Rol</label>
+            <select name="rol_id" id="editRol" class="form-control usuario-input" required>
+              <% roles.forEach(r => { %>
+                <option value="<%= r.id %>"><%= r.rol %></option>
+              <% }) %>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-footer modal-modern-footer">
+          <button type="button" class="btn btn-outline-secondary btn-round" data-dismiss="modal">Cancelar</button>
+          <button class="btn btn-primary btn-round usuario-action-btn">Guardar cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal previo eliminar -->
+<div class="modal fade" id="modalEliminarUsuario" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content user-delete-modal">
+
+      <div class="user-delete-top">
+        <div class="user-delete-icon">
+          <i class="fa fa-user-times"></i>
+        </div>
+
+        <button type="button" class="close modal-modern-close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+
+      <form method="POST" id="formEliminarUsuario">
+        <div class="modal-body text-center">
+          <h4>¿Eliminar usuario?</h4>
+          <p class="text-muted mb-0">
+            El usuario <strong id="deleteUsuarioNombre">Usuario</strong>
+            será eliminado del sistema.
+          </p>
+        </div>
+
+        <div class="modal-footer justify-content-center border-0 pt-0">
+          <button type="button" class="btn btn-outline-secondary btn-round" data-dismiss="modal">
+            Cancelar
+          </button>
+
+          <button type="submit" class="btn btn-danger btn-round usuario-action-btn">
+            <i class="fa fa-trash"></i> Sí, eliminar
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal resultado -->
+<div class="modal fade" id="modalResultadoUsuario" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content user-result-modal">
+
+      <div class="user-result-icon" id="userResultIcon">
+        <i class="fa fa-check"></i>
+      </div>
+
+      <div class="modal-body text-center">
+        <h4 id="userResultTitle">Acción realizada</h4>
+        <p class="text-muted mb-0" id="userResultText">
+          La operación se completó correctamente.
+        </p>
+      </div>
+
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-primary btn-round" data-dismiss="modal">
+          Entendido
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('click', function(e) {
+    const btnEditar = e.target.closest('.btn-editar-usuario');
+
+    if (btnEditar) {
+      document.getElementById('formEditarUsuario').action = `/usuarios/${btnEditar.dataset.id}/editar`;
+      document.getElementById('editNombre').value = btnEditar.dataset.nombre;
+      document.getElementById('editApellidos').value = btnEditar.dataset.apellidos;
+      document.getElementById('editRol').value = btnEditar.dataset.rol;
+
+      $('#modalEditarUsuario').modal('show');
+      return;
+    }
+
+    const btnEliminar = e.target.closest('.btn-eliminar-usuario');
+
+    if (btnEliminar) {
+      document.getElementById('formEliminarUsuario').action = `/usuarios/${btnEliminar.dataset.id}/eliminar`;
+      document.getElementById('deleteUsuarioNombre').textContent = btnEliminar.dataset.nombre;
+
+      $('#modalEliminarUsuario').modal('show');
+    }
+  });
+
+  function mostrarModalResultadoUsuario() {
+    const params = new URLSearchParams(window.location.search);
+    const msg = params.get('msg');
+
+    if (!msg) return;
+
+    const icon = document.getElementById('userResultIcon');
+    const title = document.getElementById('userResultTitle');
+    const text = document.getElementById('userResultText');
+
+    if (msg === 'creado') {
+      icon.className = 'user-result-icon user-result-created';
+      icon.innerHTML = '<i class="fa fa-user-plus"></i>';
+      title.textContent = 'Usuario creado';
+      text.textContent = 'El usuario fue registrado correctamente en el sistema.';
+    }
+
+    if (msg === 'actualizado') {
+      icon.className = 'user-result-icon user-result-updated';
+      icon.innerHTML = '<i class="fa fa-pencil"></i>';
+      title.textContent = 'Usuario actualizado';
+      text.textContent = 'Los datos del usuario fueron modificados correctamente.';
+    }
+
+    if (msg === 'eliminado') {
+      icon.className = 'user-result-icon user-result-deleted';
+      icon.innerHTML = '<i class="fa fa-trash"></i>';
+      title.textContent = 'Usuario eliminado';
+      text.textContent = 'El usuario fue eliminado del sistema.';
+    }
+
+    $('#modalResultadoUsuario').modal('show');
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+
+  mostrarModalResultadoUsuario();
+</script>

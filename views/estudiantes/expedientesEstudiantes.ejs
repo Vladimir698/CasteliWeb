@@ -1,0 +1,466 @@
+<% const usuarioEsAdmin = typeof esAdmin !== 'undefined' && esAdmin; %>
+<% const usuarioEsProfesor = typeof esProfesor !== 'undefined' && esProfesor; %>
+
+<div class="content">
+  <div class="row">
+
+    <div class="col-12">
+      <div class="exp-archive-hero" data-aos="fade-down">
+        <div>
+          <span class="home-badge">Archivo institucional</span>
+          <h3 class="mb-1 exp-title-main">Expedientes de Estudiantes</h3>
+          <p class="text-muted mb-0">
+            Consulta documental, revisión de datos personales y actualización de expedientes.
+          </p>
+        </div>
+
+        <% if (usuarioEsAdmin) { %>
+          <a href="/expedientes/nuevo" class="btn btn-primary btn-round" data-aos="zoom-in" data-aos-delay="180">
+            <i class="fa fa-plus"></i> Nuevo expediente
+          </a>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-4">
+      <div class="exp-summary-card" data-aos="fade-up" data-aos-delay="100">
+        <span>Total expedientes</span>
+        <h2 id="totalExpedientes">0</h2>
+        <small>Registros en archivo</small>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-4">
+      <div class="exp-summary-card exp-summary-active" data-aos="fade-up" data-aos-delay="180">
+        <span>Activos</span>
+        <h2 id="totalExpActivos">0</h2>
+        <small>Actualmente activos</small>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-4">
+      <div class="exp-summary-card exp-summary-inactive" data-aos="fade-up" data-aos-delay="260">
+        <span>Inactivos</span>
+        <h2 id="totalExpInactivos">0</h2>
+        <small>Para seguimiento</small>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <div class="exp-toolbar" data-aos="fade-up" data-aos-delay="320">
+        <div class="row align-items-end">
+          <div class="col-12 col-md-6">
+            <label class="filter-label">Buscar expediente</label>
+            <input
+              type="text"
+              id="buscarExpediente"
+              class="form-control"
+              placeholder="Buscar por nombre, apellidos o cédula..."
+            >
+          </div>
+
+          <div class="col-12 col-md-3">
+            <label class="filter-label">Estado</label>
+            <select id="filtroExpEstado" class="form-control">
+              <option value="todos">Todos</option>
+              <option value="activo">Activos</option>
+              <option value="inactivo">Inactivos</option>
+            </select>
+          </div>
+
+          <div class="col-12 col-md-3">
+            <button id="btnLimpiarExp" type="button" class="btn btn-outline-secondary btn-round btn-block">
+              <i class="fa fa-refresh"></i> Limpiar filtros
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <div id="expedientesGrid" class="expedientes-archive-grid"></div>
+
+      <div id="emptyExpedientes" class="empty-state d-none">
+        <i class="fa fa-folder-open fa-2x mb-3"></i>
+        <h5>No se encontraron expedientes</h5>
+        <p class="text-muted">Prueba cambiando los filtros de búsqueda.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal ver expediente -->
+<div class="modal fade modal-modern" id="modalVerExp" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content modal-modern-content">
+
+      <div class="modal-header modal-modern-header">
+        <div>
+          <h5 class="modal-title mb-0">Ver Expediente</h5>
+          <small class="text-muted">Vista solo lectura</small>
+        </div>
+
+        <button type="button" class="close modal-modern-close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body modal-modern-body">
+        <div id="modalVerExpBody">
+          <div class="text-center text-muted py-5">
+            <i class="fa fa-circle-o-notch fa-spin fa-2x mb-3"></i>
+            <div>Cargando...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer modal-modern-footer">
+        <button type="button" class="btn btn-outline-secondary btn-round" data-dismiss="modal">
+          Cerrar
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal previo para eliminar -->
+<div class="modal fade" id="modalEliminarExpediente" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content exp-delete-modal">
+
+      <div class="exp-delete-top">
+        <div class="exp-delete-icon">
+          <i class="fa fa-trash"></i>
+        </div>
+
+        <button type="button" class="close modal-modern-close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body text-center">
+        <h4>¿Eliminar expediente?</h4>
+
+        <p class="text-muted mb-0">
+          El expediente de
+          <strong id="deleteExpedienteNombre"></strong>
+          será eliminado permanentemente.
+        </p>
+      </div>
+
+      <div class="modal-footer justify-content-center border-0 pt-0">
+        <button type="button" class="btn btn-outline-secondary btn-round" data-dismiss="modal">
+          Cancelar
+        </button>
+
+        <form id="formEliminarExpediente" method="POST" style="margin:0;">
+          <button type="submit" class="btn btn-danger btn-round">
+            <i class="fa fa-trash"></i> Sí, eliminar
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal de resultado -->
+<div class="modal fade" id="modalConfirmExpediente" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content exp-confirm-modal">
+
+      <div class="exp-confirm-icon" id="expConfirmIcon">
+        <i class="fa fa-check"></i>
+      </div>
+
+      <div class="modal-body text-center">
+        <h4 id="expConfirmTitle">Acción realizada</h4>
+        <p class="text-muted mb-0" id="expConfirmText">
+          El expediente fue procesado correctamente.
+        </p>
+      </div>
+
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-primary btn-round" data-dismiss="modal">
+          Entendido
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script id="expedientes-json" type="application/json">
+  <%- JSON.stringify(estudiantes || []) %>
+</script>
+
+<script id="config-expedientes" type="application/json">
+  <%- JSON.stringify({ usuarioEsAdmin }) %>
+</script>
+
+<script>
+  const expedientesData = JSON.parse(document.getElementById('expedientes-json').textContent);
+  const configExp = JSON.parse(document.getElementById('config-expedientes').textContent);
+
+  const usuarioEsAdmin = configExp.usuarioEsAdmin;
+  const grid = document.getElementById('expedientesGrid');
+  const emptyState = document.getElementById('emptyExpedientes');
+  const buscar = document.getElementById('buscarExpediente');
+  const filtroEstado = document.getElementById('filtroExpEstado');
+  const btnLimpiar = document.getElementById('btnLimpiarExp');
+
+  function actualizarStats() {
+    const total = expedientesData.length;
+    const activos = expedientesData.filter(e => e.estado).length;
+    const inactivos = total - activos;
+
+    document.getElementById('totalExpedientes').textContent = total;
+    document.getElementById('totalExpActivos').textContent = activos;
+    document.getElementById('totalExpInactivos').textContent = inactivos;
+  }
+
+  function renderExpedientes() {
+    let lista = [...expedientesData];
+
+    const texto = buscar.value.toLowerCase().trim();
+    const estado = filtroEstado.value;
+
+    if (texto) {
+      lista = lista.filter(e =>
+        String(e.cedula || '').toLowerCase().includes(texto) ||
+        String(e.nombre || '').toLowerCase().includes(texto) ||
+        String(e.apellidos || '').toLowerCase().includes(texto)
+      );
+    }
+
+    if (estado === 'activo') lista = lista.filter(e => e.estado);
+    if (estado === 'inactivo') lista = lista.filter(e => !e.estado);
+
+    lista.sort((a, b) =>
+      `${a.nombre || ''} ${a.apellidos || ''}`.localeCompare(`${b.nombre || ''} ${b.apellidos || ''}`)
+    );
+
+    grid.innerHTML = '';
+
+    if (lista.length === 0) {
+      emptyState.classList.remove('d-none');
+      return;
+    }
+
+    emptyState.classList.add('d-none');
+
+    lista.forEach((e, index) => {
+      const folio = String(e.id || '').padStart(4, '0');
+
+      const card = document.createElement('div');
+      card.className = 'exp-archive-card';
+      card.setAttribute('data-aos', 'fade-up');
+      card.setAttribute('data-aos-delay', String(100 + (index * 70)));
+
+      card.innerHTML = `
+        <div class="exp-folder-tab">
+          <span>EXP-${folio}</span>
+          <span class="status-pill ${e.estado ? 'status-active' : 'status-inactive'}">
+            ${e.estado ? 'Activo' : 'Inactivo'}
+          </span>
+        </div>
+
+        <div class="exp-folder-body">
+          <div class="exp-document-icon">
+            <i class="fa fa-folder-open-o"></i>
+          </div>
+
+          <div class="exp-document-main">
+            <h5>${e.nombre || ''} ${e.apellidos || ''}</h5>
+            <p class="mb-0">${e.cedula || 'Sin cédula registrada'}</p>
+          </div>
+        </div>
+
+        <div class="exp-document-strip">
+          <div>
+            <small>Nacionalidad</small>
+            <strong>${e.nacionalidad || 'No registrada'}</strong>
+          </div>
+
+          <div>
+            <small>Nacimiento</small>
+            <strong>${e.fechaNacimiento || 'No registrada'}</strong>
+          </div>
+
+          <div>
+            <small>Beca</small>
+            <strong>${e.beca ? 'Sí' : 'No'}</strong>
+          </div>
+        </div>
+
+        <div class="exp-diagnosis-box">
+          <small>Diagnóstico / observación</small>
+          <p>${e.diagnostico || 'Sin diagnóstico registrado'}</p>
+        </div>
+
+        <div class="exp-card-actions">
+          <button type="button" class="btn btn-sm btn-neutral btn-round btn-ver-exp" data-id="${e.id}">
+            <i class="fa fa-eye"></i> Ver expediente
+          </button>
+
+          <a href="/expedientes/${e.id}/editar" class="btn btn-sm btn-info btn-round btn-card-action">
+            <i class="fa fa-pencil"></i> Editar
+          </a>
+
+          ${usuarioEsAdmin ? `
+            <button
+              type="button"
+              class="btn btn-sm btn-danger btn-round btn-card-action btn-eliminar-exp"
+              data-id="${e.id}"
+              data-nombre="${e.nombre || ''} ${e.apellidos || ''}"
+            >
+              <i class="fa fa-trash"></i> Eliminar
+            </button>
+          ` : ''}
+        </div>
+      `;
+
+      grid.appendChild(card);
+    });
+
+    if (window.AOS) AOS.refresh();
+  }
+
+  function mostrarModalConfirmacionExpediente() {
+    const params = new URLSearchParams(window.location.search);
+    const msg = params.get('msg');
+
+    if (!msg) return;
+
+    const icon = document.getElementById('expConfirmIcon');
+    const title = document.getElementById('expConfirmTitle');
+    const text = document.getElementById('expConfirmText');
+
+    if (msg === 'creado') {
+      icon.className = 'exp-confirm-icon exp-confirm-created';
+      icon.innerHTML = '<i class="fa fa-folder-open"></i>';
+      title.textContent = 'Expediente creado';
+      text.textContent = 'El nuevo expediente fue registrado correctamente en el sistema.';
+    }
+
+    if (msg === 'actualizado') {
+      icon.className = 'exp-confirm-icon exp-confirm-updated';
+      icon.innerHTML = '<i class="fa fa-pencil"></i>';
+      title.textContent = 'Expediente actualizado';
+      text.textContent = 'Los datos del expediente fueron modificados correctamente.';
+    }
+
+    if (msg === 'eliminado') {
+      icon.className = 'exp-confirm-icon exp-confirm-deleted';
+      icon.innerHTML = '<i class="fa fa-trash"></i>';
+      title.textContent = 'Expediente eliminado';
+      text.textContent = 'El expediente fue eliminado del archivo de estudiantes.';
+    }
+
+    $('#modalConfirmExpediente').modal('show');
+
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+
+  buscar.addEventListener('input', renderExpedientes);
+  filtroEstado.addEventListener('change', renderExpedientes);
+
+  btnLimpiar.addEventListener('click', function () {
+    buscar.value = '';
+    filtroEstado.value = 'todos';
+    renderExpedientes();
+  });
+
+  document.addEventListener('click', async function (e) {
+    const btnVer = e.target.closest('.btn-ver-exp');
+
+    if (btnVer) {
+      const id = btnVer.dataset.id;
+
+      $('#modalVerExp').modal('show');
+
+      const body = document.getElementById('modalVerExpBody');
+      body.innerHTML = `
+        <div class="text-center text-muted py-5">
+          <i class="fa fa-circle-o-notch fa-spin fa-2x mb-3"></i>
+          <div>Cargando expediente...</div>
+        </div>
+      `;
+
+      try {
+        const res = await fetch(`/expedientes/${id}/modal`);
+        const html = await res.text();
+        body.innerHTML = html;
+
+        await cargarUbicacionesModal();
+
+      } catch (error) {
+        body.innerHTML = `<div class="alert alert-danger">No se pudo cargar el expediente.</div>`;
+      }
+
+      return;
+    }
+
+    const btnEliminar = e.target.closest('.btn-eliminar-exp');
+
+    if (btnEliminar) {
+      const id = btnEliminar.dataset.id;
+      const nombre = btnEliminar.dataset.nombre;
+
+      document.getElementById('deleteExpedienteNombre').textContent = nombre;
+      document.getElementById('formEliminarExpediente').action = `/expedientes/${id}/eliminar`;
+
+      $('#modalEliminarExpediente').modal('show');
+    }
+  });
+
+  async function cargarUbicacionesModal() {
+    const provincia = document.getElementById('provinciaInicial_modal')?.value || '';
+    const canton = document.getElementById('cantonInicial_modal')?.value || '';
+    const distrito = document.getElementById('distritoInicial_modal')?.value || '';
+
+    const selCanton = document.getElementById('canton_modal');
+    const selDistrito = document.getElementById('distrito_modal');
+
+    if (!provincia || !selCanton || !selDistrito) return;
+
+    const resC = await fetch(`/expedientes/api/cantones?provincia=${encodeURIComponent(provincia)}`);
+    const cantones = await resC.json();
+
+    selCanton.innerHTML = `<option value="">Seleccione...</option>`;
+
+    cantones.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c;
+      opt.textContent = c;
+      if (canton && canton === c) opt.selected = true;
+      selCanton.appendChild(opt);
+    });
+
+    if (!canton) return;
+
+    const resD = await fetch(`/expedientes/api/distritos?provincia=${encodeURIComponent(provincia)}&canton=${encodeURIComponent(canton)}`);
+    const distritos = await resD.json();
+
+    selDistrito.innerHTML = `<option value="">Seleccione...</option>`;
+
+    distritos.forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = d;
+      opt.textContent = d;
+      if (distrito && distrito === d) opt.selected = true;
+      selDistrito.appendChild(opt);
+    });
+  }
+
+  $('#modalVerExp').on('hidden.bs.modal', function () {
+    const body = document.getElementById('modalVerExpBody');
+    if (body) body.innerHTML = '';
+  });
+
+  actualizarStats();
+  renderExpedientes();
+  mostrarModalConfirmacionExpediente();
+</script>

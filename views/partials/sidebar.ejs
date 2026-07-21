@@ -1,0 +1,89 @@
+<% const rol = usuario ? usuario.rol : ''; %>
+
+<div class="sidebar" data-color="white" data-active-color="primary">
+  <div class="logo">
+    <a href="/home" class="simple-text logo-normal">
+      <img src="/images/logo-ascopa.png" class="sidebar-logo">
+    </a>
+  </div>
+
+  <div class="sidebar-wrapper">
+    <ul class="nav">
+
+      <% if (rol === 'Administrador' || rol === 'Profesor') { %>
+        <li>
+          <a data-toggle="collapse" href="#menuEstudiantes" aria-expanded="false">
+            <i class="nc-icon nc-hat-3"></i>
+            <p>
+              Estudiantes
+              <b class="caret"></b>
+            </p>
+          </a>
+
+          <div class="collapse" id="menuEstudiantes">
+            <ul class="nav">
+              <li>
+                <a href="/expedientes/dashboard">
+                  <i class="nc-icon nc-single-02"></i>
+                  <span class="sidebar-normal"> Listado de Estudiantes </span>
+                </a>
+              </li>
+
+              <li>
+                <a href="/expedientes">
+                  <i class="nc-icon nc-book-bookmark"></i>
+                  <span class="sidebar-normal"> Expedientes de Estudiantes </span>
+                </a>
+              </li>
+
+              <li>
+                <a href="/encargados">
+                  <i class="nc-icon nc-single-copy-04"></i>
+                  <span class="sidebar-normal"> Encargados </span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </li>
+      <% } %>
+
+      <% if (rol === 'Administrador') { %>
+        <li>
+          <a href="/facturacion">
+            <i class="nc-icon nc-money-coins"></i>
+            <p>Facturación</p>
+          </a>
+        </li>
+
+        <li>
+          <a href="/empleados">
+            <i class="nc-icon nc-single-02"></i>
+            <p>Empleados</p>
+          </a>
+        </li>
+
+        <li>
+          <a href="/proveedores">
+            <i class="nc-icon nc-delivery-fast"></i>
+            <p>Proveedores</p>
+          </a>
+        </li>
+
+        <li>
+          <a href="/reportes">
+            <i class="nc-icon nc-chart-bar-32"></i>
+            <p>Reportes</p>
+          </a>
+        </li>
+
+        <li>
+          <a href="/usuarios">
+            <i class="nc-icon nc-circle-10"></i>
+            <p>Usuarios</p>
+          </a>
+        </li>
+      <% } %>
+
+    </ul>
+  </div>
+</div>

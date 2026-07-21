@@ -1,0 +1,301 @@
+<% const usuarioEsAdmin = typeof esAdmin !== 'undefined' && esAdmin; %>
+<% const usuarioEsProfesor = typeof esProfesor !== 'undefined' && esProfesor; %>
+
+<div class="content">
+  <div class="row">
+
+    <div class="col-12">
+      <div class="students-hero-card" data-aos="fade-down">
+        <div>
+          <h3 class="mb-1">Estudiantes</h3>
+          <p class="text-muted mb-0">Resumen general, estado y horarios registrados</p>
+        </div>
+
+        <% if (usuarioEsAdmin) { %>
+          <a href="/expedientes/nuevo" class="btn btn-primary btn-round" data-aos="zoom-in" data-aos-delay="180">
+            <i class="fa fa-plus"></i> Agregar estudiante
+          </a>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-4">
+      <div class="stat-card stat-animated" data-aos="fade-up" data-aos-delay="100">
+        <span>Total</span>
+        <h2 id="totalEstudiantes">0</h2>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-4">
+      <div class="stat-card stat-active stat-animated" data-aos="fade-up" data-aos-delay="180">
+        <span>Activos</span>
+        <h2 id="totalActivos">0</h2>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-4">
+      <div class="stat-card stat-inactive stat-animated" data-aos="fade-up" data-aos-delay="260">
+        <span>Inactivos</span>
+        <h2 id="totalInactivos">0</h2>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <div id="studentsGrid" class="students-grid"></div>
+    </div>
+
+  </div>
+</div>
+
+<% if (usuarioEsAdmin) { %>
+<div class="modal fade modal-modern" id="modalHorario" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content modal-modern-content horario-modal-content">
+
+      <div class="modal-header modal-modern-header">
+        <div>
+          <h5 class="modal-title mb-0">Asignar horario</h5>
+          <small class="text-muted" id="horarioEstudianteNombre"></small>
+        </div>
+
+        <button type="button" class="close modal-modern-close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+
+      <form method="POST" id="formHorario">
+        <input type="hidden" name="horario" id="horarioFinal">
+
+        <div class="modal-body modal-modern-body">
+
+          <label class="filter-label">Seleccione días de asistencia</label>
+
+          <div class="horario-days-grid">
+            <% ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'].forEach(dia => { %>
+              <label class="horario-day-chip">
+                <input type="checkbox" class="chk-dia" value="<%= dia %>">
+                <span><%= dia %></span>
+              </label>
+            <% }) %>
+          </div>
+
+          <div class="row mt-3">
+            <div class="col-12 col-md-6">
+              <div class="form-group">
+                <label>Hora de entrada</label>
+                <input type="time" id="horaInicio" class="form-control horario-time-input">
+              </div>
+            </div>
+
+            <div class="col-12 col-md-6">
+              <div class="form-group">
+                <label>Hora de salida</label>
+                <input type="time" id="horaFin" class="form-control horario-time-input">
+              </div>
+            </div>
+          </div>
+
+          <div class="horario-preview-box">
+            <span>Vista previa del horario</span>
+            <strong id="horarioPreview">Seleccione días y horas</strong>
+          </div>
+
+        </div>
+
+        <div class="modal-footer modal-modern-footer">
+          <button type="button" class="btn btn-outline-secondary btn-round" data-dismiss="modal">
+            Cancelar
+          </button>
+
+          <button type="submit" class="btn btn-primary btn-round">
+            <i class="fa fa-save"></i> Guardar horario
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+<% } %>
+
+<script id="estudiantes-json" type="application/json"><%- estudiantesJson %></script>
+
+<script>
+  const usuarioEsAdmin = JSON.parse('<%= JSON.stringify(usuarioEsAdmin) %>');
+
+  const estudiantesData = JSON.parse(
+    document.getElementById('estudiantes-json').textContent
+  );
+
+  const grid = document.getElementById('studentsGrid');
+
+  function renderCards() {
+    grid.innerHTML = '';
+
+    estudiantesData.forEach((e, index) => {
+      const nombre = e.nombre || '';
+      const apellidos = e.apellidos || '';
+      const inicialNombre = nombre.charAt(0) || 'E';
+      const inicialApellido = apellidos.charAt(0) || '';
+
+      const card = document.createElement('div');
+      card.className = 'student-modern-card student-card-animated';
+
+      card.setAttribute('data-aos', 'fade-up');
+      card.setAttribute('data-aos-delay', String(120 + (index * 80)));
+
+      card.innerHTML = `
+        <div class="student-card-top">
+          <div class="avatar-circle avatar-pulse">
+            ${inicialNombre}${inicialApellido}
+          </div>
+
+          <div class="student-info">
+            <h5>${nombre} ${apellidos}</h5>
+            <span>${e.cedula || 'Sin cédula'}</span>
+          </div>
+
+          <span class="status-pill ${e.estado ? 'status-active' : 'status-inactive'}">
+            ${e.estado ? 'Activo' : 'Inactivo'}
+          </span>
+        </div>
+
+        <div class="student-card-body">
+
+          <div class="student-detail detail-animated horario-detail-row">
+            <i class="fa fa-clock-o"></i>
+
+            <div class="horario-info">
+              <strong>Horario</strong>
+              <p>${e.horario || 'Sin horario'}</p>
+            </div>
+
+            ${usuarioEsAdmin ? `
+              <button
+                type="button"
+                class="btn btn-sm btn-round btn-horario-custom"
+                data-id="${e.id}"
+                data-nombre="${nombre} ${apellidos}"
+                data-horario="${e.horario || ''}"
+              >
+                <i class="fa fa-calendar"></i> Horario
+              </button>
+            ` : ''}
+          </div>
+
+          <div class="student-detail detail-animated">
+            <i class="fa fa-file-text-o"></i>
+            <div>
+              <strong>Diagnóstico</strong>
+              <p>${e.diagnostico || 'Sin diagnóstico'}</p>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="student-card-actions">
+          ${usuarioEsAdmin ? `
+            <a href="/expedientes/${e.id}/editar" class="btn btn-sm btn-round btn-editar-custom">
+              <i class="fa fa-pencil"></i> Editar
+            </a>
+          ` : ''}
+
+          <a href="/encargados?estudiante=${e.id}" class="btn btn-sm btn-round btn-editar-custom">
+            <i class="fa fa-users"></i> Encargados
+          </a>
+        </div>
+      `;
+
+      grid.appendChild(card);
+    });
+
+    if (window.AOS) {
+      AOS.refresh();
+    }
+  }
+
+  function actualizarStats() {
+    document.getElementById('totalEstudiantes').textContent = estudiantesData.length;
+    document.getElementById('totalActivos').textContent = estudiantesData.filter(e => e.estado).length;
+    document.getElementById('totalInactivos').textContent = estudiantesData.filter(e => !e.estado).length;
+  }
+
+  function construirHorario() {
+    const dias = Array.from(document.querySelectorAll('.chk-dia:checked'))
+      .map(chk => chk.value);
+
+    const horaInicio = document.getElementById('horaInicio').value;
+    const horaFin = document.getElementById('horaFin').value;
+
+    let texto = '';
+
+    if (dias.length > 0) {
+      texto += dias.join(', ');
+    }
+
+    if (horaInicio && horaFin) {
+      texto += texto ? ` de ${horaInicio} a ${horaFin}` : `De ${horaInicio} a ${horaFin}`;
+    } else if (horaInicio) {
+      texto += texto ? ` desde ${horaInicio}` : `Desde ${horaInicio}`;
+    } else if (horaFin) {
+      texto += texto ? ` hasta ${horaFin}` : `Hasta ${horaFin}`;
+    }
+
+    if (!texto) {
+      texto = '';
+    }
+
+    document.getElementById('horarioFinal').value = texto;
+    document.getElementById('horarioPreview').textContent = texto || 'Seleccione días y horas';
+  }
+
+  function cargarHorarioExistente(horario) {
+    const horarioLower = horario.toLowerCase();
+
+    document.querySelectorAll('.chk-dia').forEach(chk => {
+      chk.checked = horarioLower.includes(chk.value.toLowerCase());
+    });
+
+    const horas = horario.match(/(\d{2}:\d{2})/g);
+
+    document.getElementById('horaInicio').value = horas && horas[0] ? horas[0] : '';
+    document.getElementById('horaFin').value = horas && horas[1] ? horas[1] : '';
+
+    construirHorario();
+  }
+
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.btn-horario-custom');
+    if (!btn) return;
+
+    const id = btn.dataset.id;
+    const nombre = btn.dataset.nombre;
+    const horario = btn.dataset.horario || '';
+
+    document.getElementById('formHorario').action = `/expedientes/${id}/horario`;
+    document.getElementById('horarioEstudianteNombre').textContent = nombre;
+
+    document.querySelectorAll('.chk-dia').forEach(chk => chk.checked = false);
+    document.getElementById('horaInicio').value = '';
+    document.getElementById('horaFin').value = '';
+    document.getElementById('horarioFinal').value = '';
+    document.getElementById('horarioPreview').textContent = 'Seleccione días y horas';
+
+    cargarHorarioExistente(horario);
+
+    $('#modalHorario').modal('show');
+  });
+
+  document.addEventListener('change', function(e) {
+    if (
+      e.target.classList.contains('chk-dia') ||
+      e.target.id === 'horaInicio' ||
+      e.target.id === 'horaFin'
+    ) {
+      construirHorario();
+    }
+  });
+
+  actualizarStats();
+  renderCards();
+</script>

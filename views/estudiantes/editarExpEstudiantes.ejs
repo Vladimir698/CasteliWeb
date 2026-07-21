@@ -1,0 +1,244 @@
+<%
+  const formData = (typeof form !== 'undefined' && form) 
+    ? form 
+    : (typeof estudiante !== 'undefined' && estudiante) 
+      ? estudiante 
+      : {};
+
+  const provinciasArr = (typeof provincias !== 'undefined' && provincias) ? provincias : [];
+%>
+
+<div class="content">
+  <div class="container-fluid page-center">
+    <div class="row justify-content-center w-100">
+      <div class="col-12 col-md-10 col-lg-9 col-xl-8">
+
+        <div class="card exp-form-card" data-aos="fade-up">
+          <div class="card-header exp-form-header" data-aos="fade-down" data-aos-delay="100">
+            <div class="exp-form-icon">
+              <i class="fa fa-pencil"></i>
+            </div>
+
+            <div>
+              <h4 class="card-title mb-0">Editar Expediente de Estudiante</h4>
+              <p class="card-category mb-0">Modifica la información del estudiante</p>
+            </div>
+          </div>
+
+          <div class="card-body">
+
+            <% if (typeof error !== 'undefined' && error) { %>
+              <div class="alert alert-danger" data-aos="fade-down">
+                <strong>Error:</strong> <%= error %>
+              </div>
+            <% } %>
+
+            <form action="/expedientes/<%= formData.id %>/editar" method="POST" autocomplete="off">
+
+              <div class="exp-section-title" data-aos="fade-right" data-aos-delay="120">
+                <span>01</span> Datos personales
+              </div>
+
+              <div class="row">
+                <div class="col-md-4 pr-1" data-aos="fade-up" data-aos-delay="140">
+                  <div class="form-group exp-input-animated">
+                    <label>Cédula <span class="text-danger">*</span></label>
+                    <input type="text" name="cedula" class="form-control" placeholder="Ej: 1-2345-6789" required value="<%= formData.cedula ? formData.cedula : '' %>" />
+                  </div>
+                </div>
+
+                <div class="col-md-4 px-1" data-aos="fade-up" data-aos-delay="180">
+                  <div class="form-group exp-input-animated">
+                    <label>Nombre <span class="text-danger">*</span></label>
+                    <input type="text" name="nombre" class="form-control" placeholder="Ej: Juan" required value="<%= formData.nombre ? formData.nombre : '' %>" />
+                  </div>
+                </div>
+
+                <div class="col-md-4 pl-1" data-aos="fade-up" data-aos-delay="220">
+                  <div class="form-group exp-input-animated">
+                    <label>Apellidos <span class="text-danger">*</span></label>
+                    <input type="text" name="apellidos" class="form-control" placeholder="Ej: Pérez López" required value="<%= formData.apellidos ? formData.apellidos : '' %>" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-4 pr-1" data-aos="fade-up" data-aos-delay="160">
+                  <div class="form-group exp-input-animated">
+                    <label>Nacionalidad</label>
+                    <input type="text" name="nacionalidad" class="form-control" placeholder="Ej: Costarricense" value="<%= formData.nacionalidad ? formData.nacionalidad : '' %>" />
+                  </div>
+                </div>
+
+                <div class="col-md-4 px-1" data-aos="fade-up" data-aos-delay="200">
+                  <div class="form-group exp-input-animated">
+                    <label>Fecha de nacimiento <span class="text-danger">*</span></label>
+                    <input type="date" name="fechaNacimiento" class="form-control" required value="<%= formData.fechaNacimiento ? formData.fechaNacimiento : '' %>" />
+                  </div>
+                </div>
+
+                <div class="col-md-4 pl-1" data-aos="fade-up" data-aos-delay="240">
+                  <div class="form-group exp-input-animated">
+                    <label>Diagnóstico</label>
+                    <input type="text" name="diagnostico" class="form-control" placeholder="Ej: Observación / diagnóstico" value="<%= formData.diagnostico ? formData.diagnostico : '' %>" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="exp-section-title" data-aos="fade-right" data-aos-delay="160">
+                <span>02</span> Dirección
+              </div>
+
+              <div class="row">
+                <div class="col-md-4 pr-1" data-aos="fade-up" data-aos-delay="180">
+                  <div class="form-group exp-input-animated">
+                    <label>Provincia <span class="text-danger">*</span></label>
+                    <select id="provincia" name="provincia" class="form-control" required>
+                      <option value="">Seleccione...</option>
+                      <% provinciasArr.forEach(p => { %>
+                        <option value="<%= p %>" <%= (formData.provincia === p) ? 'selected' : '' %>>
+                          <%= p %>
+                        </option>
+                      <% }) %>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="col-md-4 px-1" data-aos="fade-up" data-aos-delay="220">
+                  <div class="form-group exp-input-animated">
+                    <label>Cantón <span class="text-danger">*</span></label>
+                    <select id="canton" name="canton" class="form-control" required disabled>
+                      <option value="">Seleccione...</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="col-md-4 pl-1" data-aos="fade-up" data-aos-delay="260">
+                  <div class="form-group exp-input-animated">
+                    <label>Distrito <span class="text-danger">*</span></label>
+                    <select id="distrito" name="distrito" class="form-control" required disabled>
+                      <option value="">Seleccione...</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-12" data-aos="fade-up" data-aos-delay="280">
+                  <div class="form-group exp-input-animated">
+                    <label>Dirección exacta</label>
+                    <input type="text" name="direccionExacta" class="form-control" placeholder="Ej: 200m sur del parque central, casa amarilla..." value="<%= formData.direccionExacta ? formData.direccionExacta : '' %>" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="exp-section-title" data-aos="fade-right" data-aos-delay="200">
+                <span>03</span> Opciones
+              </div>
+
+              <div class="row">
+                <div class="col-12" data-aos="fade-up" data-aos-delay="300">
+                  <div class="exp-options-box">
+                    <label class="exp-option-chip">
+                      <input class="form-check-input" type="checkbox" name="beca" <%= (formData.beca === 'on' || formData.beca === true) ? 'checked' : '' %> />
+                      <span><i class="fa fa-star"></i> Beca</span>
+                    </label>
+
+                    <label class="exp-option-chip">
+                      <input class="form-check-input" type="checkbox" name="estado" <%= (formData.estado === 'on' || formData.estado === true) ? 'checked' : '' %> />
+                      <span><i class="fa fa-check-circle"></i> Activo</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="d-flex justify-content-end mt-4" data-aos="fade-up" data-aos-delay="340">
+                <a href="/expedientes" class="btn btn-outline-secondary btn-round mr-2 exp-form-btn">
+                  Cancelar
+                </a>
+
+                <button type="submit" class="btn btn-primary btn-round exp-form-btn">
+                  <i class="fa fa-save"></i> Guardar Cambios
+                </button>
+              </div>
+
+            </form>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    const selProvincia = document.getElementById('provincia');
+    const selCanton = document.getElementById('canton');
+    const selDistrito = document.getElementById('distrito');
+
+    function resetSelect(select, placeholder = 'Seleccione...') {
+      select.innerHTML = `<option value="">${placeholder}</option>`;
+      select.disabled = true;
+    }
+
+    async function loadCantones(provincia, selected = '') {
+      resetSelect(selCanton);
+      resetSelect(selDistrito);
+
+      if (!provincia) return;
+
+      const res = await fetch(`/expedientes/api/cantones?provincia=${encodeURIComponent(provincia)}`);
+      const cantones = await res.json();
+
+      cantones.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.textContent = c;
+        if (selected && selected === c) opt.selected = true;
+        selCanton.appendChild(opt);
+      });
+
+      selCanton.disabled = cantones.length === 0;
+    }
+
+    async function loadDistritos(provincia, canton, selected = '') {
+      resetSelect(selDistrito);
+
+      if (!provincia || !canton) return;
+
+      const res = await fetch(`/expedientes/api/distritos?provincia=${encodeURIComponent(provincia)}&canton=${encodeURIComponent(canton)}`);
+      const distritos = await res.json();
+
+      distritos.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d;
+        opt.textContent = d;
+        if (selected && selected === d) opt.selected = true;
+        selDistrito.appendChild(opt);
+      });
+
+      selDistrito.disabled = distritos.length === 0;
+    }
+
+    selProvincia.addEventListener('change', () => {
+      loadCantones(selProvincia.value);
+    });
+
+    selCanton.addEventListener('change', () => {
+      loadDistritos(selProvincia.value, selCanton.value);
+    });
+
+    const provinciaInicial = "<%= formData.provincia ? formData.provincia : '' %>";
+    const cantonInicial = "<%= formData.canton ? formData.canton : '' %>";
+    const distritoInicial = "<%= formData.distrito ? formData.distrito : '' %>";
+
+    if (provinciaInicial) {
+      await loadCantones(provinciaInicial, cantonInicial);
+      if (cantonInicial) {
+        await loadDistritos(provinciaInicial, cantonInicial, distritoInicial);
+      }
+    }
+  });
+</script>

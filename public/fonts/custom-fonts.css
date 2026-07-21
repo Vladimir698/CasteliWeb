@@ -1,0 +1,42 @@
+/* public/css/custom-fonts.css */
+
+/* Poppins Medium */
+@font-face {
+  font-family: "Poppins";
+  src: url("/fonts/Poppins Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Montserrat Extra Bold (OTF) */
+@font-face {
+  font-family: "Montserrat";
+  src: url("/fonts/Montserrat Extra Bold.otf") format("opentype");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ✅ Aplicación global (pisando Paper Dashboard) */
+html, body {
+  font-family: "Poppins", sans-serif !important;
+  font-weight: 500;
+}
+
+/* Títulos y elementos importantes */
+h1, h2, h3, h4, h5, h6,
+.navbar .navbar-brand,
+.sidebar .logo a,
+.card-title {
+  font-family: "Montserrat", sans-serif !important;
+  font-weight: 800 !important;
+}
+
+/* Textos del sidebar */
+.sidebar .nav p,
+.sidebar .nav a,
+.sidebar .sidebar-wrapper {
+  font-family: "Poppins", sans-serif !important;
+  font-weight: 500 !important;
+}

@@ -1,0 +1,433 @@
+<div class="content">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-11">
+
+      <div class="card proveedor-main-card" data-aos="fade-up">
+        <div class="card-header d-flex align-items-center justify-content-between">
+          <div>
+            <h4 class="card-title mb-0">Proveedores</h4>
+            <p class="card-category mb-0">Información general, bancaria y de contacto</p>
+          </div>
+
+          <button
+            class="btn btn-primary btn-round proveedor-btn-animated"
+            data-toggle="modal"
+            data-target="#modalCrearProveedor"
+          >
+            <i class="fa fa-plus"></i> Agregar proveedor
+          </button>
+        </div>
+
+        <div class="card-body">
+
+          <% if (!proveedores || proveedores.length === 0) { %>
+            <div class="text-center text-muted py-5 proveedor-empty-state">
+              <i class="fa fa-truck fa-2x mb-3"></i>
+              <p class="mb-0">No hay proveedores registrados.</p>
+            </div>
+          <% } else { %>
+
+            <div class="table-responsive">
+              <table id="tablaProveedores" class="table table-striped table-hover">
+                <thead class="text-primary">
+                  <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Cédula jurídica</th>
+                    <th>Teléfono</th>
+                    <th>Correo</th>
+                    <th>Banco</th>
+                    <th>Cuenta bancaria</th>
+                    <th class="text-right">Acciones</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <% proveedores.forEach(p => { %>
+                    <tr class="proveedor-row-animated">
+                      <td><%= p.id %></td>
+                      <td><%= p.nombre %></td>
+                      <td><%= p.cedula_juridica || '-' %></td>
+                      <td><%= p.telefono || '-' %></td>
+                      <td><%= p.correo || '-' %></td>
+                      <td><%= p.entidad_bancaria || '-' %></td>
+                      <td><%= p.cuenta_bancaria || '-' %></td>
+
+                      <td class="td-actions text-right">
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-info btn-icon btn-editar-proveedor"
+                          data-id="<%= p.id %>"
+                          data-nombre="<%= p.nombre || '' %>"
+                          data-cedula_juridica="<%= p.cedula_juridica || '' %>"
+                          data-telefono="<%= p.telefono || '' %>"
+                          data-correo="<%= p.correo || '' %>"
+                          data-entidad_bancaria="<%= p.entidad_bancaria || '' %>"
+                          data-cuenta_bancaria="<%= p.cuenta_bancaria || '' %>"
+                          data-direccion="<%= p.direccion || '' %>"
+                        >
+                          <i class="fa fa-pencil"></i>
+                        </button>
+
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-danger btn-icon btn-eliminar-proveedor"
+                          data-id="<%= p.id %>"
+                          data-nombre="<%= p.nombre %>"
+                        >
+                          <i class="fa fa-trash"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+
+          <% } %>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal Crear -->
+<div class="modal fade modal-modern" id="modalCrearProveedor" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content modal-modern-content proveedor-modal-animated">
+
+      <div class="modal-header modal-modern-header">
+        <div>
+          <h5 class="modal-title mb-0">Agregar proveedor</h5>
+          <small class="text-muted">Registrar información para transferencias y pagos</small>
+        </div>
+
+        <button type="button" class="close modal-modern-close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+
+      <form method="POST" action="/proveedores/nuevo">
+        <div class="modal-body modal-modern-body">
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Nombre del proveedor</label>
+                <input name="nombre" class="form-control" required>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Cédula jurídica</label>
+                <input name="cedula_juridica" class="form-control">
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Teléfono</label>
+                <input name="telefono" class="form-control">
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Correo electrónico</label>
+                <input name="correo" type="email" class="form-control">
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Entidad bancaria</label>
+                <input name="entidad_bancaria" class="form-control" placeholder="Ej: Banco Nacional">
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Cuenta bancaria / IBAN</label>
+                <input name="cuenta_bancaria" class="form-control" placeholder="Ej: CR...">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Dirección</label>
+            <textarea name="direccion" class="form-control" rows="3"></textarea>
+          </div>
+
+        </div>
+
+        <div class="modal-footer modal-modern-footer">
+          <button type="button" class="btn btn-outline-secondary btn-round" data-dismiss="modal">
+            Cancelar
+          </button>
+
+          <button type="submit" class="btn btn-primary btn-round proveedor-btn-animated">
+            <i class="fa fa-save"></i> Guardar
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar -->
+<div class="modal fade modal-modern" id="modalEditarProveedor" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content modal-modern-content proveedor-modal-animated">
+
+      <div class="modal-header modal-modern-header">
+        <div>
+          <h5 class="modal-title mb-0">Editar proveedor</h5>
+          <small class="text-muted" id="editarProveedorNombre"></small>
+        </div>
+
+        <button type="button" class="close modal-modern-close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+
+      <form method="POST" id="formEditarProveedor">
+        <div class="modal-body modal-modern-body">
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Nombre del proveedor</label>
+                <input name="nombre" id="editNombreProveedor" class="form-control" required>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Cédula jurídica</label>
+                <input name="cedula_juridica" id="editCedulaJuridicaProveedor" class="form-control">
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Teléfono</label>
+                <input name="telefono" id="editTelefonoProveedor" class="form-control">
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Correo electrónico</label>
+                <input name="correo" id="editCorreoProveedor" type="email" class="form-control">
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Entidad bancaria</label>
+                <input name="entidad_bancaria" id="editEntidadBancariaProveedor" class="form-control">
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Cuenta bancaria / IBAN</label>
+                <input name="cuenta_bancaria" id="editCuentaBancariaProveedor" class="form-control">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Dirección</label>
+            <textarea name="direccion" id="editDireccionProveedor" class="form-control" rows="3"></textarea>
+          </div>
+
+        </div>
+
+        <div class="modal-footer modal-modern-footer">
+          <button type="button" class="btn btn-outline-secondary btn-round" data-dismiss="modal">
+            Cancelar
+          </button>
+
+          <button type="submit" class="btn btn-primary btn-round proveedor-btn-animated">
+            <i class="fa fa-save"></i> Guardar cambios
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal Eliminar -->
+<div class="modal fade" id="modalEliminarProveedor" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content prov-delete-modal">
+
+      <div class="prov-delete-top">
+        <div class="prov-delete-icon">
+          <i class="fa fa-trash"></i>
+        </div>
+
+        <button type="button" class="close modal-modern-close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+
+      <form method="POST" id="formEliminarProveedor">
+        <div class="modal-body text-center">
+          <h4>¿Eliminar proveedor?</h4>
+          <p class="text-muted mb-0">
+            El proveedor <strong id="deleteProveedorNombre">Proveedor</strong>
+            será eliminado del sistema.
+          </p>
+        </div>
+
+        <div class="modal-footer justify-content-center border-0 pt-0">
+          <button type="button" class="btn btn-outline-secondary btn-round" data-dismiss="modal">
+            Cancelar
+          </button>
+
+          <button type="submit" class="btn btn-danger btn-round proveedor-btn-animated">
+            <i class="fa fa-trash"></i> Sí, eliminar
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal Resultado -->
+<div class="modal fade" id="modalResultadoProveedor" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content prov-result-modal">
+
+      <div class="prov-result-icon" id="provResultIcon">
+        <i class="fa fa-check"></i>
+      </div>
+
+      <div class="modal-body text-center">
+        <h4 id="provResultTitle">Acción realizada</h4>
+        <p class="text-muted mb-0" id="provResultText">
+          La operación se completó correctamente.
+        </p>
+      </div>
+
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-primary btn-round" data-dismiss="modal">
+          Entendido
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const table = document.getElementById('tablaProveedores');
+
+    if (table) {
+      $('#tablaProveedores').DataTable({
+        autoWidth: false,
+        responsive: false,
+        order: [[1, 'asc']],
+        columnDefs: [
+          {
+            targets: 0,
+            visible: false,
+            searchable: false
+          }
+        ],
+        language: {
+          url: "https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json"
+        }
+      });
+    }
+
+    document.addEventListener('click', function (e) {
+      const btnEditar = e.target.closest('.btn-editar-proveedor');
+
+      if (btnEditar) {
+        const id = btnEditar.dataset.id;
+
+        document.getElementById('formEditarProveedor').action = `/proveedores/${id}/editar`;
+
+        document.getElementById('editNombreProveedor').value = btnEditar.dataset.nombre || '';
+        document.getElementById('editCedulaJuridicaProveedor').value = btnEditar.dataset.cedula_juridica || '';
+        document.getElementById('editTelefonoProveedor').value = btnEditar.dataset.telefono || '';
+        document.getElementById('editCorreoProveedor').value = btnEditar.dataset.correo || '';
+        document.getElementById('editEntidadBancariaProveedor').value = btnEditar.dataset.entidad_bancaria || '';
+        document.getElementById('editCuentaBancariaProveedor').value = btnEditar.dataset.cuenta_bancaria || '';
+        document.getElementById('editDireccionProveedor').value = btnEditar.dataset.direccion || '';
+
+        document.getElementById('editarProveedorNombre').textContent = btnEditar.dataset.nombre || '';
+
+        $('#modalEditarProveedor').modal('show');
+        return;
+      }
+
+      const btnEliminar = e.target.closest('.btn-eliminar-proveedor');
+
+      if (btnEliminar) {
+        const id = btnEliminar.dataset.id;
+        const nombre = btnEliminar.dataset.nombre;
+
+        document.getElementById('formEliminarProveedor').action = `/proveedores/${id}/eliminar`;
+        document.getElementById('deleteProveedorNombre').textContent = nombre;
+
+        $('#modalEliminarProveedor').modal('show');
+      }
+    });
+
+    function mostrarModalResultadoProveedor() {
+      const params = new URLSearchParams(window.location.search);
+      const msg = params.get('msg');
+
+      if (!msg) return;
+
+      const icon = document.getElementById('provResultIcon');
+      const title = document.getElementById('provResultTitle');
+      const text = document.getElementById('provResultText');
+
+      if (msg === 'creado') {
+        icon.className = 'prov-result-icon prov-result-created';
+        icon.innerHTML = '<i class="fa fa-truck"></i>';
+        title.textContent = 'Proveedor registrado';
+        text.textContent = 'El proveedor fue agregado correctamente al sistema.';
+      }
+
+      if (msg === 'actualizado') {
+        icon.className = 'prov-result-icon prov-result-updated';
+        icon.innerHTML = '<i class="fa fa-pencil"></i>';
+        title.textContent = 'Proveedor actualizado';
+        text.textContent = 'Los datos del proveedor fueron modificados correctamente.';
+      }
+
+      if (msg === 'eliminado') {
+        icon.className = 'prov-result-icon prov-result-deleted';
+        icon.innerHTML = '<i class="fa fa-trash"></i>';
+        title.textContent = 'Proveedor eliminado';
+        text.textContent = 'El proveedor fue eliminado del sistema.';
+      }
+
+      $('#modalResultadoProveedor').modal('show');
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    mostrarModalResultadoProveedor();
+  });
+</script>

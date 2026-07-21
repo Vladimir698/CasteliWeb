@@ -1,0 +1,819 @@
+<% const usuarioEsAdmin = typeof esAdmin !== 'undefined' && esAdmin; %>
+<% const usuarioEsProfesor = typeof esProfesor !== 'undefined' && esProfesor; %>
+
+<script id="config-encargados" type="application/json">
+  <%- JSON.stringify({
+    usuarioEsAdmin: usuarioEsAdmin,
+    estudianteInicial: typeof estudianteSeleccionado !== 'undefined' ? estudianteSeleccionado : null
+  }) %>
+</script>
+
+<div class="content">
+  <div class="row">
+
+    <div class="col-12 col-lg-5">
+      <div class="card encargado-panel-card" data-aos="fade-right">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Selecciona un estudiante</h4>
+          <p class="card-category mb-0">Verás sus encargados y pagos a la derecha</p>
+        </div>
+
+        <div class="card-body">
+          <div class="table-responsive">
+            <table id="tablaEstudiantesEnc" class="table table-hover">
+              <thead class="text-primary">
+                <tr>
+                  <th style="width:70px;">ID</th>
+                  <th>Estudiante</th>
+                  <th style="width:90px;">Estado</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <% estudiantes.forEach(s => { %>
+                  <tr class="encargado-student-row" style="cursor:pointer;">
+                    <td><%= s.id %></td>
+                    <td>
+                      <strong><%= s.nombre %> <%= s.apellidos %></strong><br>
+                      <small class="text-muted"><%= s.cedula %></small>
+                    </td>
+                    <td>
+                      <span class="badge <%= s.estado ? 'badge-success' : 'badge-secondary' %>">
+                        <%= s.estado ? 'Activo' : 'Inactivo' %>
+                      </span>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-7">
+      <div class="card encargado-panel-card" data-aos="fade-left" data-aos-delay="160">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <div>
+            <h4 class="card-title mb-0">Encargados</h4>
+            <p id="lblEstudiante" class="card-category mb-0">Selecciona un estudiante</p>
+            <span id="badgeEncCount" class="badge badge-info" style="display:none;"></span>
+          </div>
+
+          <% if (usuarioEsAdmin) { %>
+            <button id="btnAbrirModal" class="btn btn-primary btn-round encargado-main-btn" disabled>
+              <i class="fa fa-plus"></i> Agregar encargado
+            </button>
+          <% } %>
+        </div>
+
+        <div class="card-body" id="encargadosWrap" style="min-height:260px;">
+          <div class="text-center text-muted py-5 encargado-empty-state">
+            <i class="fa fa-user-circle-o fa-2x mb-3"></i>
+            <p>Selecciona un estudiante para ver sus encargados.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<% if (usuarioEsAdmin) { %>
+
+<div class="modal fade modal-modern" id="modalEncargado">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content modal-modern-content">
+
+      <div class="modal-header modal-modern-header">
+        <div>
+          <h5 class="modal-title mb-0">Nuevo Encargado</h5>
+          <small class="text-muted">Asignar responsable al estudiante seleccionado</small>
+        </div>
+
+        <button type="button" class="close modal-modern-close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body modal-modern-body">
+        <div class="alert alert-danger d-none" id="errCrearEncargado"></div>
+
+        <form id="formEncargado">
+          <input type="hidden" id="estudiante_id" name="estudiante_id">
+
+          <div class="form-group">
+            <label>Cédula</label>
+            <input name="cedula" class="form-control mb-2" required>
+          </div>
+
+          <div class="form-group">
+            <label>Nombre</label>
+            <input name="nombre" class="form-control mb-2" required>
+          </div>
+
+          <div class="form-group">
+            <label>Apellidos</label>
+            <input name="apellidos" class="form-control mb-2" required>
+          </div>
+
+          <div class="form-group">
+            <label>Parentesco</label>
+            <input name="parentesco" class="form-control mb-2" required>
+          </div>
+
+          <div class="form-group">
+            <label>Teléfono</label>
+            <input name="telefono" class="form-control mb-2" required>
+          </div>
+
+          <div class="form-group">
+            <label>Correo</label>
+            <input name="correo" type="email" class="form-control mb-2">
+          </div>
+
+          <div class="form-group">
+            <label>Ocupación</label>
+            <input name="ocupacion" class="form-control mb-2" required>
+          </div>
+
+          <div class="form-group">
+            <label>Lugar de trabajo</label>
+            <input name="lugar_trabajo" class="form-control mb-2">
+          </div>
+
+          <button class="btn btn-primary btn-round btn-block">
+            <i class="fa fa-save"></i> Guardar encargado
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal fade modal-modern" id="modalEditarEncargado">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content modal-modern-content">
+
+      <div class="modal-header modal-modern-header">
+        <div>
+          <h5 class="modal-title mb-0">Editar Encargado</h5>
+          <small class="text-muted">Actualizar información del responsable</small>
+        </div>
+
+        <button type="button" class="close modal-modern-close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body modal-modern-body">
+        <div class="alert alert-danger d-none" id="errEditarEncargado"></div>
+
+        <form id="formEditarEncargado">
+          <input type="hidden" id="edit_encargado_id">
+
+          <div class="form-group">
+            <label>Cédula</label>
+            <input name="cedula" id="edit_cedula" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label>Nombre</label>
+            <input name="nombre" id="edit_nombre" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label>Apellidos</label>
+            <input name="apellidos" id="edit_apellidos" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label>Parentesco</label>
+            <input name="parentesco" id="edit_parentesco" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label>Teléfono</label>
+            <input name="telefono" id="edit_telefono" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label>Correo</label>
+            <input name="correo" id="edit_correo" type="email" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label>Ocupación</label>
+            <input name="ocupacion" id="edit_ocupacion" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label>Lugar de trabajo</label>
+            <input name="lugar_trabajo" id="edit_lugar_trabajo" class="form-control" >
+          </div>
+
+          <div class="form-group">
+            <label>Estado</label>
+            <select name="estado" id="edit_estado" class="form-control">
+              <option value="true">Activo</option>
+              <option value="false">Inactivo</option>
+            </select>
+          </div>
+
+          <button class="btn btn-primary btn-round btn-block">
+            <i class="fa fa-save"></i> Guardar cambios
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal fade modal-modern" id="modalPagoMensual" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content modal-modern-content">
+
+      <div class="modal-header modal-modern-header">
+        <div>
+          <h5 class="modal-title mb-0">Registrar pago mensual</h5>
+          <small class="text-muted" id="pagoEncargadoNombre"></small>
+        </div>
+
+        <button type="button" class="close modal-modern-close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body modal-modern-body">
+        <div class="alert alert-danger d-none" id="errPagoMensual"></div>
+
+        <form id="formPagoMensual">
+          <input type="hidden" id="pago_encargado_id">
+          <input type="hidden" id="pago_estudiante_id" name="estudiante_id">
+
+          <div class="form-group">
+            <label>Mes</label>
+            <select name="mes" id="pago_mes" class="form-control" required>
+              <option value="">Seleccione...</option>
+              <option value="1">Enero</option>
+              <option value="2">Febrero</option>
+              <option value="3">Marzo</option>
+              <option value="4">Abril</option>
+              <option value="5">Mayo</option>
+              <option value="6">Junio</option>
+              <option value="7">Julio</option>
+              <option value="8">Agosto</option>
+              <option value="9">Septiembre</option>
+              <option value="10">Octubre</option>
+              <option value="11">Noviembre</option>
+              <option value="12">Diciembre</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Año</label>
+            <input type="number" name="anio" id="pago_anio" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label>Fecha de pago</label>
+            <input type="date" name="fecha_pago" id="pago_fecha" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label>Monto</label>
+            <input type="number" name="monto" id="pago_monto" class="form-control" step="0.01" min="0">
+          </div>
+
+          <div class="form-group">
+            <label>Forma de pago</label>
+            <select name="forma_pago" id="pago_forma" class="form-control">
+              <option value="">Seleccione...</option>
+              <option value="Efectivo">Efectivo</option>
+              <option value="SINPE">SINPE</option>
+              <option value="Transferencia">Transferencia</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Observación</label>
+            <textarea name="observacion" id="pago_observacion" class="form-control" rows="3"></textarea>
+          </div>
+
+          <button class="btn btn-primary btn-round btn-block">
+            <i class="fa fa-check"></i> Registrar pago
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalEliminarEncargado" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content enc-delete-modal">
+
+      <div class="enc-delete-top">
+        <div class="enc-delete-icon">
+          <i class="fa fa-trash"></i>
+        </div>
+
+        <button type="button" class="close modal-modern-close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body text-center">
+        <h4>¿Eliminar encargado?</h4>
+        <p class="text-muted mb-0">
+          El encargado <strong id="deleteEncargadoNombre"></strong> será eliminado del estudiante seleccionado.
+        </p>
+      </div>
+
+      <div class="modal-footer justify-content-center border-0 pt-0">
+        <button type="button" class="btn btn-outline-secondary btn-round" data-dismiss="modal">
+          Cancelar
+        </button>
+
+        <button type="button" class="btn btn-danger btn-round" id="btnConfirmarEliminarEnc">
+          <i class="fa fa-trash"></i> Sí, eliminar
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalResultadoEncargado" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content enc-result-modal">
+
+      <div class="enc-result-icon" id="encResultIcon">
+        <i class="fa fa-check"></i>
+      </div>
+
+      <div class="modal-body text-center">
+        <h4 id="encResultTitle">Acción realizada</h4>
+        <p class="text-muted mb-0" id="encResultText">
+          La operación se completó correctamente.
+        </p>
+      </div>
+
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-primary btn-round" data-dismiss="modal">
+          Entendido
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<% } %>
+
+<script>
+  const configEncargados = JSON.parse(document.getElementById('config-encargados').textContent);
+
+  const usuarioEsAdmin = configEncargados.usuarioEsAdmin;
+  const estudianteInicial = configEncargados.estudianteInicial;
+
+  let estudianteActualId = null;
+  let estudianteActualNombre = '';
+  let encargadoEliminarId = null;
+
+  const mesesPago = [
+    { id: 1, nombre: 'Ene' },
+    { id: 2, nombre: 'Feb' },
+    { id: 3, nombre: 'Mar' },
+    { id: 4, nombre: 'Abr' },
+    { id: 5, nombre: 'May' },
+    { id: 6, nombre: 'Jun' },
+    { id: 7, nombre: 'Jul' },
+    { id: 8, nombre: 'Ago' },
+    { id: 9, nombre: 'Sep' },
+    { id: 10, nombre: 'Oct' },
+    { id: 11, nombre: 'Nov' },
+    { id: 12, nombre: 'Dic' }
+  ];
+
+  $(document).ready(function () {
+    const dt = $('#tablaEstudiantesEnc').DataTable({
+      pageLength: 5,
+      language: {
+        url: "https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json"
+      }
+    });
+
+    async function seleccionarEstudiantePorFila(fila) {
+      $('#tablaEstudiantesEnc tbody tr').removeClass('row-selected');
+      $(fila).addClass('row-selected');
+
+      const row = dt.row(fila).data();
+      if (!row) return;
+
+      estudianteActualId = row[0];
+      estudianteActualNombre = $(fila).find('td:eq(1) strong').text();
+
+      $('#lblEstudiante').text(estudianteActualNombre);
+
+      if (usuarioEsAdmin) {
+        $('#btnAbrirModal').prop('disabled', false);
+      }
+
+      await cargarEncargados(estudianteActualId);
+    }
+
+    async function seleccionarEstudiantePorId(id) {
+      $('#tablaEstudiantesEnc tbody tr').each(function () {
+        const row = dt.row(this).data();
+
+        if (row && String(row[0]) === String(id)) {
+          seleccionarEstudiantePorFila(this);
+        }
+      });
+    }
+
+    $('#tablaEstudiantesEnc tbody').on('click', 'tr', function () {
+      seleccionarEstudiantePorFila(this);
+    });
+
+    if (usuarioEsAdmin) {
+      $('#btnAbrirModal').click(() => {
+        $('#errCrearEncargado').addClass('d-none').text('');
+        $('#formEncargado')[0].reset();
+        $('#estudiante_id').val(estudianteActualId);
+        $('#modalEncargado').modal('show');
+      });
+
+      $('#formEncargado').submit(async function (e) {
+        e.preventDefault();
+
+        const payload = $(this).serialize();
+
+        try {
+          const res = await fetch('/encargados/nuevo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: payload
+          });
+
+          const data = await res.json();
+
+          if (!data.ok) {
+            $('#errCrearEncargado').removeClass('d-none').text(data.message || 'No se pudo guardar.');
+            return;
+          }
+
+          $('#modalEncargado').modal('hide');
+          await cargarEncargados(estudianteActualId);
+          mostrarResultadoEncargado('creado');
+
+        } catch (error) {
+          $('#errCrearEncargado').removeClass('d-none').text('Error interno guardando encargado.');
+        }
+      });
+
+      $(document).on('click', '.btn-edit-enc', function () {
+        $('#errEditarEncargado').addClass('d-none').text('');
+
+        $('#edit_encargado_id').val($(this).data('id'));
+        $('#edit_cedula').val($(this).data('cedula'));
+        $('#edit_nombre').val($(this).data('nombre'));
+        $('#edit_apellidos').val($(this).data('apellidos'));
+        $('#edit_parentesco').val($(this).data('parentesco'));
+        $('#edit_telefono').val($(this).data('telefono'));
+        $('#edit_correo').val($(this).data('correo'));
+        $('#edit_ocupacion').val($(this).data('ocupacion'));
+        $('#edit_lugar_trabajo').val($(this).data('lugar_trabajo'));
+        $('#edit_estado').val(String($(this).data('estado')));
+
+        $('#modalEditarEncargado').modal('show');
+      });
+
+      $('#formEditarEncargado').submit(async function (e) {
+        e.preventDefault();
+
+        const id = $('#edit_encargado_id').val();
+        const payload = $(this).serialize();
+
+        try {
+          const res = await fetch(`/encargados/${id}/editar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: payload
+          });
+
+          const data = await res.json();
+
+          if (!data.ok) {
+            $('#errEditarEncargado').removeClass('d-none').text(data.message || 'No se pudo actualizar.');
+            return;
+          }
+
+          $('#modalEditarEncargado').modal('hide');
+          await cargarEncargados(estudianteActualId);
+          mostrarResultadoEncargado('actualizado');
+
+        } catch (error) {
+          $('#errEditarEncargado').removeClass('d-none').text('Error interno actualizando encargado.');
+        }
+      });
+
+      $(document).on('click', '.btn-del-enc', function () {
+        encargadoEliminarId = $(this).data('id');
+        const nombre = $(this).data('nombre');
+
+        $('#deleteEncargadoNombre').text(nombre);
+        $('#modalEliminarEncargado').modal('show');
+      });
+
+      $('#btnConfirmarEliminarEnc').click(async function () {
+        if (!encargadoEliminarId) return;
+
+        try {
+          const res = await fetch(`/encargados/${encargadoEliminarId}/eliminar`, {
+            method: 'POST'
+          });
+
+          const data = await res.json();
+
+          if (data.ok) {
+            $('#modalEliminarEncargado').modal('hide');
+            await cargarEncargados(estudianteActualId);
+            mostrarResultadoEncargado('eliminado');
+          }
+
+        } catch (error) {
+          $('#modalEliminarEncargado').modal('hide');
+        }
+      });
+
+      $(document).on('click', '.pago-mes-chip', function () {
+        const btn = $(this);
+
+        $('#errPagoMensual').addClass('d-none').text('');
+
+        $('#pago_encargado_id').val(btn.data('encargado-id'));
+        $('#pago_estudiante_id').val(btn.data('estudiante-id'));
+        $('#pago_mes').val(btn.data('mes'));
+        $('#pago_anio').val(btn.data('anio'));
+        $('#pago_fecha').val(fechaHoyISO());
+        $('#pago_monto').val('');
+        $('#pago_forma').val('');
+        $('#pago_observacion').val('');
+        $('#pagoEncargadoNombre').text(btn.data('nombre'));
+
+        $('#modalPagoMensual').modal('show');
+      });
+
+      $('#formPagoMensual').submit(async function (e) {
+        e.preventDefault();
+
+        const encargadoId = $('#pago_encargado_id').val();
+        const payload = $(this).serialize();
+
+        try {
+          const res = await fetch(`/encargados/${encargadoId}/pago`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: payload
+          });
+
+          const data = await res.json();
+
+          if (!data.ok) {
+            $('#errPagoMensual').removeClass('d-none').text(data.message || 'No se pudo registrar el pago.');
+            return;
+          }
+
+          $('#modalPagoMensual').modal('hide');
+          await cargarEncargados(estudianteActualId);
+          mostrarResultadoEncargado('pago');
+
+        } catch (error) {
+          $('#errPagoMensual').removeClass('d-none').text('Error interno registrando pago.');
+        }
+      });
+    }
+
+    if (estudianteInicial !== null) {
+      setTimeout(() => {
+        seleccionarEstudiantePorId(estudianteInicial);
+      }, 300);
+    }
+  });
+
+  function mostrarResultadoEncargado(tipo) {
+    const icon = document.getElementById('encResultIcon');
+    const title = document.getElementById('encResultTitle');
+    const text = document.getElementById('encResultText');
+
+    if (tipo === 'creado') {
+      icon.className = 'enc-result-icon enc-result-created';
+      icon.innerHTML = '<i class="fa fa-user-plus"></i>';
+      title.textContent = 'Encargado creado';
+      text.textContent = 'El encargado fue asignado correctamente al estudiante.';
+    }
+
+    if (tipo === 'actualizado') {
+      icon.className = 'enc-result-icon enc-result-updated';
+      icon.innerHTML = '<i class="fa fa-pencil"></i>';
+      title.textContent = 'Encargado actualizado';
+      text.textContent = 'Los datos del encargado fueron modificados correctamente.';
+    }
+
+    if (tipo === 'eliminado') {
+      icon.className = 'enc-result-icon enc-result-deleted';
+      icon.innerHTML = '<i class="fa fa-trash"></i>';
+      title.textContent = 'Encargado eliminado';
+      text.textContent = 'El encargado fue eliminado del estudiante seleccionado.';
+    }
+
+    if (tipo === 'pago') {
+      icon.className = 'enc-result-icon enc-result-created';
+      icon.innerHTML = '<i class="fa fa-money"></i>';
+      title.textContent = 'Pago registrado';
+      text.textContent = 'El pago mensual fue registrado correctamente.';
+    }
+
+    $('#modalResultadoEncargado').modal('show');
+  }
+
+  function renderPagosMeses(encargado) {
+    const anioActual = new Date().getFullYear();
+    const pagos = encargado.pagos || [];
+
+    let html = `
+      <div class="pagos-meses-box">
+        <div class="pagos-header">
+          <strong>Pagos ${anioActual}</strong>
+          <small>Control mensual</small>
+        </div>
+
+        <div class="pagos-grid">
+    `;
+
+    mesesPago.forEach(m => {
+      const pago = pagos.find(p =>
+        Number(p.mes) === Number(m.id) &&
+        Number(p.anio) === Number(anioActual)
+      );
+
+      html += `
+        <button
+          type="button"
+          class="pago-mes-chip ${pago ? 'pagado' : 'pendiente'}"
+          ${usuarioEsAdmin ? `
+            data-encargado-id="${encargado.id}"
+            data-estudiante-id="${encargado.estudiante_id}"
+            data-mes="${m.id}"
+            data-anio="${anioActual}"
+            data-nombre="${encargado.nombre || ''} ${encargado.apellidos || ''}"
+          ` : 'disabled'}
+        >
+          <span>${m.nombre}</span>
+          <i class="fa ${pago ? 'fa-check' : 'fa-times'}"></i>
+        </button>
+      `;
+    });
+
+    html += `
+        </div>
+      </div>
+    `;
+
+    return html;
+  }
+
+  function fechaHoyISO() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  async function cargarEncargados(id) {
+    const wrap = document.getElementById('encargadosWrap');
+
+    wrap.innerHTML = `
+      <div class="text-center text-muted py-5 encargado-empty-state">
+        <i class="fa fa-circle-o-notch fa-spin fa-2x mb-3"></i>
+        <div>Cargando encargados...</div>
+      </div>
+    `;
+
+    try {
+      const res = await fetch(`/encargados/api/estudiante/${id}`);
+
+      if (!res.ok) throw new Error('No se pudo consultar la API');
+
+      const encargados = await res.json();
+      const count = Array.isArray(encargados) ? encargados.length : 0;
+
+      $('#badgeEncCount').show().text(`${count}/2`);
+
+      if (usuarioEsAdmin) {
+        if (count >= 2) {
+          $('#btnAbrirModal')
+            .prop('disabled', true)
+            .removeClass('btn-primary')
+            .addClass('btn-secondary')
+            .html('<i class="fa fa-check"></i> 2 encargados');
+        } else {
+          $('#btnAbrirModal')
+            .prop('disabled', false)
+            .removeClass('btn-secondary')
+            .addClass('btn-primary')
+            .html('<i class="fa fa-plus"></i> Agregar encargado');
+        }
+      }
+
+      if (!encargados || encargados.length === 0) {
+        wrap.innerHTML = `
+          <div class="text-center text-muted py-5 encargado-empty-state">
+            <i class="fa fa-id-card-o fa-2x mb-3"></i>
+            <p class="mb-0">Este estudiante no tiene encargados asignados.</p>
+            ${usuarioEsAdmin ? '<small class="text-muted">Puedes asignar hasta 2 encargados.</small>' : ''}
+          </div>
+        `;
+        return;
+      }
+
+      let html = `<div class="row">`;
+
+      encargados.forEach((e) => {
+        html += `
+          <div class="col-12 col-md-6">
+            <div class="card card-encargado encargado-person-card mb-3">
+              <div class="card-body">
+                <div class="d-flex align-items-start justify-content-between">
+                  <div>
+                    <h5 class="mb-1">${e.nombre || ''} ${e.apellidos || ''}</h5>
+                    <div class="text-muted small">${e.parentesco || 'Encargado'}</div>
+                  </div>
+
+                  <span class="badge ${e.estado ? 'badge-success' : 'badge-secondary'}">
+                    ${e.estado ? 'Activo' : 'Inactivo'}
+                  </span>
+                </div>
+
+                <hr class="my-3">
+
+                <div class="small">
+                  <div><strong>Cédula:</strong> ${e.cedula || '-'}</div>
+                  <div><strong>Tel:</strong> ${e.telefono || '-'}</div>
+                  <div><strong>Correo:</strong> ${e.correo || '-'}</div>
+                  <div><strong>Ocupación:</strong> ${e.ocupacion || '-'}</div>
+                  <div><strong>Trabajo:</strong> ${e.lugar_trabajo || '-'}</div>
+                </div>
+
+                ${renderPagosMeses(e)}
+
+                ${usuarioEsAdmin ? `
+                  <div class="d-flex justify-content-end mt-3" style="gap:8px;">
+                    <button
+                      class="btn btn-sm btn-outline-info btn-edit-enc"
+                      data-id="${e.id}"
+                      data-cedula="${e.cedula || ''}"
+                      data-nombre="${e.nombre || ''}"
+                      data-apellidos="${e.apellidos || ''}"
+                      data-parentesco="${e.parentesco || ''}"
+                      data-telefono="${e.telefono || ''}"
+                      data-correo="${e.correo || ''}"
+                      data-ocupacion="${e.ocupacion || ''}"
+                      data-lugar_trabajo="${e.lugar_trabajo || ''}"
+                      data-estado="${e.estado ? 'true' : 'false'}"
+                    >
+                      <i class="fa fa-pencil"></i>
+                    </button>
+
+                    <button
+                      class="btn btn-sm btn-outline-danger btn-del-enc encargado-delete-btn"
+                      data-id="${e.id}"
+                      data-nombre="${e.nombre || ''} ${e.apellidos || ''}"
+                    >
+                      <i class="fa fa-trash"></i>
+                    </button>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      html += `</div>`;
+      wrap.innerHTML = html;
+
+    } catch (error) {
+      console.error(error);
+
+      wrap.innerHTML = `
+        <div class="alert alert-danger">
+          No se pudieron cargar los encargados del estudiante.
+        </div>
+      `;
+    }
+  }
+</script>
