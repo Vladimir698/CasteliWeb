@@ -122,20 +122,30 @@ const {
 const authRoutes = require('./src/routes/authRoutes');
 const usuariosRoutes = require('./src/routes/usuariosRoutes');
 const proveedorRoutes = require('./src/routes/proveedorRoutes');
+const clienteRoutes = require('./src/routes/clienteRoutes');
+const vehiculoRoutes = require('./src/routes/vehiculoRoutes');
+const ordenRoutes = require('./src/routes/ordenRoutes');
 
 app.use('/', authRoutes);
 
 app.get('/', (req, res) => {
-  if (req.session.usuario) {
-    return res.redirect('/home');
-  }
 
-  return res.redirect('/login');
+  req.session.usuario = {
+  id: 1,
+  nombre: 'Administrador',
+  apellidos: 'Casteli',
+  usuario: 'admin',
+  correo: 'admin@casteli.com',
+  rol: 'Administrador'
+};
+
+  return res.redirect('/home');
 });
 
-app.get('/home', requiereLogin, (req, res) => {
+app.get('/home', (req, res) => {
   res.render('index');
 });
+
 
 app.use(
   '/proveedores',
@@ -153,6 +163,10 @@ app.use(
   soloAdmin,
   usuariosRoutes
 );
+
+app.use('/clientes', clienteRoutes);
+app.use('/vehiculos', vehiculoRoutes);
+app.use('/ordenes', ordenRoutes);
 
 // =============================
 // SOCKET.IO

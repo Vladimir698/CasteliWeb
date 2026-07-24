@@ -1,0 +1,109 @@
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between mb-4">
+    <div>
+      <h1 class="h3">
+        <%= vehiculo.placa %>
+      </h1>
+
+      <p class="text-muted mb-0">
+        <%= vehiculo.marca %>
+        <%= vehiculo.modelo %>
+        <%= vehiculo.anio || '' %>
+      </p>
+
+      <p class="mb-0">
+        Cliente:
+        <a href="/clientes/<%= vehiculo.cliente.id %>">
+          <%= vehiculo.cliente.nombre %>
+        </a>
+      </p>
+    </div>
+
+    <a
+      href="/ordenes/nueva/<%= vehiculo.id %>"
+      class="btn btn-primary"
+    >
+      Nueva orden
+    </a>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <small class="text-muted">Kilometraje actual</small>
+          <h2 class="h4 mb-0">
+            <%= vehiculo.kilometraje_actual?.toLocaleString('es-CR') || 0 %>
+            km
+          </h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <small class="text-muted">
+            Kilómetros registrados entre visitas
+          </small>
+
+          <h2 class="h4 mb-0">
+            <%= kilometrosRecorridos.toLocaleString('es-CR') %>
+            km
+          </h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <small class="text-muted">Cantidad de órdenes</small>
+          <h2 class="h4 mb-0"><%= ordenes.length %></h2>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-body">
+      <h2 class="h5 mb-3">
+        Historial de órdenes
+      </h2>
+
+      <% if (!ordenes.length) { %>
+        <p class="text-muted">
+          Este vehículo no tiene órdenes registradas.
+        </p>
+      <% } %>
+
+      <% ordenes.forEach(orden => { %>
+        <a
+          href="/ordenes/<%= orden.id %>"
+          class="text-decoration-none text-dark"
+        >
+          <div class="border rounded p-3 mb-2">
+            <div class="d-flex justify-content-between">
+              <strong><%= orden.numero_orden %></strong>
+
+              <span class="badge bg-secondary">
+                <%= orden.estado.replaceAll('_', ' ') %>
+              </span>
+            </div>
+
+            <div class="text-muted mt-2">
+              <%= new Date(orden.fecha_ingreso).toLocaleDateString('es-CR') %>
+              ·
+              <%= orden.kilometraje_ingreso.toLocaleString('es-CR') %>
+              km
+            </div>
+
+            <p class="mb-0 mt-2">
+              <%= orden.problema_reportado %>
+            </p>
+          </div>
+        </a>
+      <% }) %>
+    </div>
+  </div>
+</div>

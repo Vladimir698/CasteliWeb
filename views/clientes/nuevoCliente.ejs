@@ -1,0 +1,88 @@
+<div class="container py-4">
+  <div class="card border-0 shadow-sm">
+    <div class="card-body">
+      <h1 class="h3 mb-4">Nuevo cliente</h1>
+
+      <% if (errores.length) { %>
+        <div class="alert alert-danger">
+          <% errores.forEach(error => { %>
+            <div><%= error %></div>
+          <% }) %>
+        </div>
+      <% } %>
+
+      <form method="POST" action="/clientes">
+        <div class="row">
+          <div class="col-md-8 mb-3">
+            <label class="form-label">Nombre completo *</label>
+            <input
+              type="text"
+              name="nombre"
+              class="form-control"
+              value="<%= cliente.nombre || '' %>"
+              required
+            >
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Identificación</label>
+            <input
+              type="text"
+              name="identificacion"
+              class="form-control"
+              value="<%= cliente.identificacion || '' %>"
+            >
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Teléfono</label>
+            <input
+              type="text"
+              name="telefono"
+              class="form-control"
+              value="<%= cliente.telefono || '' %>"
+            >
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Correo</label>
+            <input
+              type="email"
+              name="correo"
+              class="form-control"
+              value="<%= cliente.correo || '' %>"
+            >
+          </div>
+
+          <div class="col-12 mb-3">
+            <label class="form-label">Dirección</label>
+            <textarea
+              name="direccion"
+              class="form-control"
+              rows="2"
+            ><%= cliente.direccion || '' %></textarea>
+          </div>
+
+          <div class="col-12 mb-3">
+            <label class="form-label">Notas</label>
+            <textarea
+              name="notas"
+              class="form-control"
+              rows="3"
+            ><%= cliente.notas || '' %></textarea>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button class="btn btn-primary">
+            Guardar cliente
+          </button>
+
+          <a href="/clientes" class="btn btn-outline-secondary">
+            Cancelar
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

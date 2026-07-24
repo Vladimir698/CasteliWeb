@@ -1,0 +1,123 @@
+<div class="container py-4">
+  <div class="card border-0 shadow-sm">
+    <div class="card-body">
+      <h1 class="h3">Registrar vehículo</h1>
+
+      <p class="text-muted">
+        Cliente: <strong><%= cliente.nombre %></strong>
+      </p>
+
+      <% if (errores.length) { %>
+        <div class="alert alert-danger">
+          <% errores.forEach(error => { %>
+            <div><%= error %></div>
+          <% }) %>
+        </div>
+      <% } %>
+
+      <form
+        method="POST"
+        action="/vehiculos/cliente/<%= cliente.id %>"
+      >
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Placa *</label>
+            <input
+              type="text"
+              name="placa"
+              class="form-control"
+              value="<%= vehiculo.placa || '' %>"
+              required
+            >
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Marca *</label>
+            <input
+              type="text"
+              name="marca"
+              class="form-control"
+              value="<%= vehiculo.marca || '' %>"
+              required
+            >
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Modelo *</label>
+            <input
+              type="text"
+              name="modelo"
+              class="form-control"
+              value="<%= vehiculo.modelo || '' %>"
+              required
+            >
+          </div>
+
+          <div class="col-md-3 mb-3">
+            <label class="form-label">Año</label>
+            <input
+              type="number"
+              name="anio"
+              class="form-control"
+              value="<%= vehiculo.anio || '' %>"
+            >
+          </div>
+
+          <div class="col-md-3 mb-3">
+            <label class="form-label">Motor</label>
+            <input
+              type="text"
+              name="motor"
+              class="form-control"
+              value="<%= vehiculo.motor || '' %>"
+            >
+          </div>
+
+          <div class="col-md-3 mb-3">
+            <label class="form-label">Color</label>
+            <input
+              type="text"
+              name="color"
+              class="form-control"
+              value="<%= vehiculo.color || '' %>"
+            >
+          </div>
+
+          <div class="col-md-3 mb-3">
+            <label class="form-label">Kilometraje</label>
+            <input
+              type="number"
+              name="kilometraje_actual"
+              class="form-control"
+              min="0"
+              value="<%= vehiculo.kilometraje_actual || '' %>"
+            >
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label">VIN</label>
+            <input
+              type="text"
+              name="vin"
+              class="form-control"
+              value="<%= vehiculo.vin || '' %>"
+            >
+          </div>
+
+          <div class="col-12 mb-3">
+            <label class="form-label">Notas</label>
+            <textarea
+              name="notas"
+              class="form-control"
+              rows="3"
+            ><%= vehiculo.notas || '' %></textarea>
+          </div>
+        </div>
+
+        <button class="btn btn-primary">
+          Guardar vehículo
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

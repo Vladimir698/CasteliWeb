@@ -1,0 +1,92 @@
+<div class="container py-4">
+  <div class="card border-0 shadow-sm">
+    <div class="card-body">
+      <h1 class="h3">Nueva orden de trabajo</h1>
+
+      <p class="text-muted">
+        <strong><%= vehiculo.placa %></strong> ·
+        <%= vehiculo.marca %>
+        <%= vehiculo.modelo %>
+        · Cliente:
+        <%= vehiculo.cliente.nombre %>
+      </p>
+
+      <% if (errores.length) { %>
+        <div class="alert alert-danger">
+          <% errores.forEach(error => { %>
+            <div><%= error %></div>
+          <% }) %>
+        </div>
+      <% } %>
+
+      <form
+        method="POST"
+        action="/ordenes/vehiculo/<%= vehiculo.id %>"
+      >
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">
+              Kilometraje de ingreso *
+            </label>
+
+            <input
+              type="number"
+              name="kilometraje_ingreso"
+              class="form-control"
+              min="0"
+              value="<%= orden.kilometraje_ingreso || vehiculo.kilometraje_actual || '' %>"
+              required
+            >
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label">
+              Nivel de combustible
+            </label>
+
+            <select
+              name="nivel_combustible"
+              class="form-select"
+            >
+              <option value="">Seleccione</option>
+              <option value="reserva">Reserva</option>
+              <option value="un_cuarto">1/4</option>
+              <option value="medio">1/2</option>
+              <option value="tres_cuartos">3/4</option>
+              <option value="lleno">Lleno</option>
+            </select>
+          </div>
+
+          <div class="col-12 mb-3">
+            <label class="form-label">
+              Problema reportado *
+            </label>
+
+            <textarea
+              name="problema_reportado"
+              class="form-control"
+              rows="4"
+              required
+            ><%= orden.problema_reportado || '' %></textarea>
+          </div>
+
+          <div class="col-12 mb-3">
+            <label class="form-label">
+              Observaciones de ingreso
+            </label>
+
+            <textarea
+              name="observaciones"
+              class="form-control"
+              rows="3"
+            ><%= orden.observaciones || '' %></textarea>
+          </div>
+        </div>
+
+        <button class="btn btn-primary">
+          Crear orden
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
