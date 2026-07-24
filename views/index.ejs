@@ -1,94 +1,387 @@
 <% const rol = usuario ? usuario.rol : ''; %>
 
-<div class="content">
-  <div class="home-wrapper">
+<div class="content casteli-dashboard">
+  <div class="casteli-dashboard-container">
 
-    <div class="home-hero" data-aos="fade-down">
-      <div data-aos="fade-right" data-aos-delay="120">
-        <span class="home-badge">Sistema Administrativo</span>
-        <h2>Bienvenido a ASCOPA</h2>
-        <p>
-          Plataforma para gestionar estudiantes, expedientes, encargados,
-          empleados, facturación y reportes de la asociación.
-        </p>
-      </div>
+    <section class="casteli-start-panel">
 
-      <img
-        src="/images/logo-ascopa.png"
-        alt="Logo ASCOPA"
-        class="home-logo home-logo-animated"
-        data-aos="zoom-in"
-        data-aos-delay="250"
-      >
+  <div class="casteli-start-content">
+
+    <span class="casteli-start-label">
+      INICIO RÁPIDO
+    </span>
+
+    <h1>
+      Comience registrando al cliente
+    </h1>
+
+    <p>
+      Registre un cliente nuevo o consulte uno existente.
+      Desde su perfil podrá agregar vehículos y crear órdenes de trabajo.
+    </p>
+
+    <div class="casteli-start-actions">
+
+      <a href="/clientes/nuevo" class="casteli-primary-action">
+        <i class="fa fa-user-plus"></i>
+        Registrar cliente
+      </a>
+
+      <a href="/clientes" class="casteli-secondary-action">
+        <i class="fa fa-search"></i>
+        Buscar cliente
+      </a>
+
+      <a href="/ordenes" class="casteli-text-action">
+        Ver órdenes activas
+        <i class="fa fa-arrow-right"></i>
+      </a>
+
     </div>
 
-    <div class="home-grid">
+  </div>
 
-      <% if (rol === 'Administrador' || rol === 'Profesor') { %>
+  <div class="casteli-start-steps">
 
-        <a href="/expedientes/dashboard" class="home-module-card" data-aos="fade-up" data-aos-delay="100">
-          <div class="home-icon">
-            <i class="fa fa-users"></i>
+    <div class="casteli-step">
+      <span>01</span>
+      <div>
+        <strong>Registrar cliente</strong>
+        <small>Datos personales y contacto.</small>
+      </div>
+    </div>
+
+    <div class="casteli-step">
+      <span>02</span>
+      <div>
+        <strong>Agregar vehículo</strong>
+        <small>Placa, marca, modelo y kilometraje.</small>
+      </div>
+    </div>
+
+    <div class="casteli-step">
+      <span>03</span>
+      <div>
+        <strong>Crear orden</strong>
+        <small>Diagnóstico y trabajos del taller.</small>
+      </div>
+    </div>
+
+  </div>
+
+</section>
+
+    <section class="casteli-section-header">
+      <div>
+        <span>Módulos</span>
+        <h2>Administración del taller</h2>
+      </div>
+
+      <p>
+        Seleccione una sección para comenzar.
+      </p>
+    </section>
+
+    <div class="casteli-module-grid">
+
+      <% if (
+        rol === 'Administrador' ||
+        rol === 'Mecanico_Administrativo'
+      ) { %>
+
+        <a
+          href="/clientes"
+          class="casteli-module-card"
+          data-aos="fade-up"
+          data-aos-delay="80"
+        >
+          <div class="casteli-module-top">
+            <div class="casteli-module-icon">
+              <i class="fa fa-users"></i>
+            </div>
+
+            <span class="casteli-module-number">01</span>
           </div>
-          <h5>Estudiantes</h5>
-          <p>Consulta estudiantes, horarios, becas y estado general.</p>
+
+          <div class="casteli-module-body">
+            <h3>Clientes</h3>
+            <p>
+              Registre clientes y consulte sus vehículos,
+              órdenes e historial.
+            </p>
+          </div>
+
+          <div class="casteli-module-footer">
+            Abrir módulo
+            <i class="fa fa-arrow-right"></i>
+          </div>
         </a>
 
-        <a href="/expedientes" class="home-module-card" data-aos="fade-up" data-aos-delay="180">
-          <div class="home-icon">
-            <i class="fa fa-folder-open"></i>
+        <a
+          href="/vehiculos"
+          class="casteli-module-card"
+          data-aos="fade-up"
+          data-aos-delay="130"
+        >
+          <div class="casteli-module-top">
+            <div class="casteli-module-icon">
+              <i class="fa fa-car"></i>
+            </div>
+
+            <span class="casteli-module-number">02</span>
           </div>
-          <h5>Expedientes</h5>
-          <p>Consulta y actualiza información de los expedientes estudiantiles.</p>
+
+          <div class="casteli-module-body">
+            <h3>Vehículos</h3>
+            <p>
+              Consulte placas, kilometraje, características
+              e historial mecánico.
+            </p>
+          </div>
+
+          <div class="casteli-module-footer">
+            Abrir módulo
+            <i class="fa fa-arrow-right"></i>
+          </div>
         </a>
 
-        <a href="/encargados" class="home-module-card" data-aos="fade-up" data-aos-delay="260">
-          <div class="home-icon">
-            <i class="fa fa-id-card"></i>
+      <% } %>
+
+      <a
+        href="/ordenes"
+        class="casteli-module-card casteli-module-featured"
+        data-aos="fade-up"
+        data-aos-delay="180"
+      >
+        <div class="casteli-module-top">
+          <div class="casteli-module-icon">
+            <i class="fa fa-wrench"></i>
           </div>
-          <h5>Encargados</h5>
-          <p>Consulta los encargados asignados a cada estudiante.</p>
+
+          <span class="casteli-module-number">03</span>
+        </div>
+
+        <div class="casteli-module-body">
+          <h3>Órdenes de trabajo</h3>
+          <p>
+            Administre diagnósticos, reparaciones,
+            avances y observaciones del taller.
+          </p>
+        </div>
+
+        <div class="casteli-module-footer">
+          Abrir módulo
+          <i class="fa fa-arrow-right"></i>
+        </div>
+      </a>
+
+      <% if (
+        rol === 'Administrador' ||
+        rol === 'Mecanico_Administrativo'
+      ) { %>
+
+        <a
+          href="/proveedores"
+          class="casteli-module-card"
+          data-aos="fade-up"
+          data-aos-delay="230"
+        >
+          <div class="casteli-module-top">
+            <div class="casteli-module-icon">
+              <i class="fa fa-truck"></i>
+            </div>
+
+            <span class="casteli-module-number">04</span>
+          </div>
+
+          <div class="casteli-module-body">
+            <h3>Proveedores</h3>
+            <p>
+              Gestione proveedores de repuestos,
+              materiales y servicios.
+            </p>
+          </div>
+
+          <div class="casteli-module-footer">
+            Abrir módulo
+            <i class="fa fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a
+          href="/inventario"
+          class="casteli-module-card"
+          data-aos="fade-up"
+          data-aos-delay="280"
+        >
+          <div class="casteli-module-top">
+            <div class="casteli-module-icon">
+              <i class="fa fa-cubes"></i>
+            </div>
+
+            <span class="casteli-module-number">05</span>
+          </div>
+
+          <div class="casteli-module-body">
+            <h3>Inventario</h3>
+            <p>
+              Controle existencias, costos,
+              precios y movimientos de repuestos.
+            </p>
+          </div>
+
+          <div class="casteli-module-footer">
+            Abrir módulo
+            <i class="fa fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a
+          href="/compras"
+          class="casteli-module-card"
+          data-aos="fade-up"
+          data-aos-delay="330"
+        >
+          <div class="casteli-module-top">
+            <div class="casteli-module-icon">
+              <i class="fa fa-shopping-cart"></i>
+            </div>
+
+            <span class="casteli-module-number">06</span>
+          </div>
+
+          <div class="casteli-module-body">
+            <h3>Compras</h3>
+            <p>
+              Registre facturas y compras realizadas
+              a los proveedores.
+            </p>
+          </div>
+
+          <div class="casteli-module-footer">
+            Abrir módulo
+            <i class="fa fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a
+          href="/prefacturas"
+          class="casteli-module-card"
+          data-aos="fade-up"
+          data-aos-delay="380"
+        >
+          <div class="casteli-module-top">
+            <div class="casteli-module-icon">
+              <i class="fa fa-file-text-o"></i>
+            </div>
+
+            <span class="casteli-module-number">07</span>
+          </div>
+
+          <div class="casteli-module-body">
+            <h3>Prefacturas</h3>
+            <p>
+              Prepare repuestos, mano de obra,
+              descuentos e impuestos.
+            </p>
+          </div>
+
+          <div class="casteli-module-footer">
+            Abrir módulo
+            <i class="fa fa-arrow-right"></i>
+          </div>
         </a>
 
       <% } %>
 
       <% if (rol === 'Administrador') { %>
 
-        <a href="/facturacion" class="home-module-card" data-aos="fade-up" data-aos-delay="340">
-          <div class="home-icon">
-            <i class="fa fa-money"></i>
+        <a
+          href="/usuarios"
+          class="casteli-module-card"
+          data-aos="fade-up"
+          data-aos-delay="430"
+        >
+          <div class="casteli-module-top">
+            <div class="casteli-module-icon">
+              <i class="fa fa-user"></i>
+            </div>
+
+            <span class="casteli-module-number">08</span>
           </div>
-          <h5>Facturación</h5>
-          <p>Administra cheques, facturas, saldos y reportes contables.</p>
+
+          <div class="casteli-module-body">
+            <h3>Usuarios</h3>
+            <p>
+              Administre usuarios, roles
+              y niveles de acceso.
+            </p>
+          </div>
+
+          <div class="casteli-module-footer">
+            Abrir módulo
+            <i class="fa fa-arrow-right"></i>
+          </div>
         </a>
 
-        <a href="/empleados" class="home-module-card" data-aos="fade-up" data-aos-delay="420">
-          <div class="home-icon">
-            <i class="fa fa-briefcase"></i>
+        <a
+          href="/reportes"
+          class="casteli-module-card"
+          data-aos="fade-up"
+          data-aos-delay="480"
+        >
+          <div class="casteli-module-top">
+            <div class="casteli-module-icon">
+              <i class="fa fa-bar-chart"></i>
+            </div>
+
+            <span class="casteli-module-number">09</span>
           </div>
-          <h5>Empleados</h5>
-          <p>Gestiona el personal de la asociación.</p>
+
+          <div class="casteli-module-body">
+            <h3>Reportes</h3>
+            <p>
+              Consulte ingresos, compras,
+              productividad e indicadores.
+            </p>
+          </div>
+
+          <div class="casteli-module-footer">
+            Abrir módulo
+            <i class="fa fa-arrow-right"></i>
+          </div>
         </a>
 
-        <a href="/reportes" class="home-module-card" data-aos="fade-up" data-aos-delay="500">
-          <div class="home-icon">
-            <i class="fa fa-bar-chart"></i>
-          </div>
-          <h5>Reportes</h5>
-          <p>Visualiza indicadores y exporta reportes en PDF o Excel.</p>
-        </a>
+        <a
+          href="/configuracion"
+          class="casteli-module-card"
+          data-aos="fade-up"
+          data-aos-delay="530"
+        >
+          <div class="casteli-module-top">
+            <div class="casteli-module-icon">
+              <i class="fa fa-cog"></i>
+            </div>
 
-        <a href="/usuarios" class="home-module-card" data-aos="fade-up" data-aos-delay="580">
-          <div class="home-icon">
-            <i class="fa fa-user"></i>
+            <span class="casteli-module-number">10</span>
           </div>
-          <h5>Usuarios</h5>
-          <p>Administra usuarios, roles y permisos del sistema.</p>
+
+          <div class="casteli-module-body">
+            <h3>Configuración</h3>
+            <p>
+              Configure estados, parámetros
+              y datos generales del taller.
+            </p>
+          </div>
+
+          <div class="casteli-module-footer">
+            Abrir módulo
+            <i class="fa fa-arrow-right"></i>
+          </div>
         </a>
 
       <% } %>
 
     </div>
-
   </div>
 </div>

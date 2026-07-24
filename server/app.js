@@ -73,6 +73,7 @@ app.use((req, res, next) => {
 
   res.locals.usuario = usuario;
   res.locals.rolUsuario = rol;
+  res.locals.rutaActual = req.path;
 
   res.locals.esAdmin = rol === 'administrador';
 
@@ -136,7 +137,7 @@ app.get('/', (req, res) => {
   apellidos: 'Casteli',
   usuario: 'admin',
   correo: 'admin@casteli.com',
-  rol: 'Administrador'
+  rol: 'administrador'
 };
 
   return res.redirect('/home');

@@ -1,109 +1,302 @@
-<div class="container-fluid py-4">
-  <div class="d-flex justify-content-between mb-4">
-    <div>
-      <h1 class="h3">
-        <%= vehiculo.placa %>
-      </h1>
+<div class="content">
+  <div class="container-fluid">
 
-      <p class="text-muted mb-0">
-        <%= vehiculo.marca %>
-        <%= vehiculo.modelo %>
-        <%= vehiculo.anio || '' %>
-      </p>
+    <section class="responsive-form-card">
 
-      <p class="mb-0">
-        Cliente:
-        <a href="/clientes/<%= vehiculo.cliente.id %>">
-          <%= vehiculo.cliente.nombre %>
-        </a>
-      </p>
-    </div>
+      <header class="responsive-form-header">
+        <div>
+          <span class="form-eyebrow">DETALLE DEL VEHÍCULO</span>
 
-    <a
-      href="/ordenes/nueva/<%= vehiculo.id %>"
-      class="btn btn-primary"
-    >
-      Nueva orden
-    </a>
-  </div>
-
-  <div class="row mb-4">
-    <div class="col-md-4">
-      <div class="card border-0 shadow-sm">
-        <div class="card-body">
-          <small class="text-muted">Kilometraje actual</small>
-          <h2 class="h4 mb-0">
-            <%= vehiculo.kilometraje_actual?.toLocaleString('es-CR') || 0 %>
-            km
+          <h2>
+            <%= vehiculo.placa || 'Sin placa' %>
           </h2>
-        </div>
-      </div>
-    </div>
 
-    <div class="col-md-4">
-      <div class="card border-0 shadow-sm">
-        <div class="card-body">
-          <small class="text-muted">
-            Kilómetros registrados entre visitas
-          </small>
+          <p>
+            <%= vehiculo.marca || '' %>
+            <%= vehiculo.modelo || '' %>
+            <%= vehiculo.anio || '' %>
+          </p>
 
-          <h2 class="h4 mb-0">
-            <%= kilometrosRecorridos.toLocaleString('es-CR') %>
-            km
-          </h2>
-        </div>
-      </div>
-    </div>
+          <% if (vehiculo.cliente) { %>
+            <p class="mb-0">
+              Cliente:
 
-    <div class="col-md-4">
-      <div class="card border-0 shadow-sm">
-        <div class="card-body">
-          <small class="text-muted">Cantidad de órdenes</small>
-          <h2 class="h4 mb-0"><%= ordenes.length %></h2>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card border-0 shadow-sm">
-    <div class="card-body">
-      <h2 class="h5 mb-3">
-        Historial de órdenes
-      </h2>
-
-      <% if (!ordenes.length) { %>
-        <p class="text-muted">
-          Este vehículo no tiene órdenes registradas.
-        </p>
-      <% } %>
-
-      <% ordenes.forEach(orden => { %>
-        <a
-          href="/ordenes/<%= orden.id %>"
-          class="text-decoration-none text-dark"
-        >
-          <div class="border rounded p-3 mb-2">
-            <div class="d-flex justify-content-between">
-              <strong><%= orden.numero_orden %></strong>
-
-              <span class="badge bg-secondary">
-                <%= orden.estado.replaceAll('_', ' ') %>
-              </span>
-            </div>
-
-            <div class="text-muted mt-2">
-              <%= new Date(orden.fecha_ingreso).toLocaleDateString('es-CR') %>
-              ·
-              <%= orden.kilometraje_ingreso.toLocaleString('es-CR') %>
-              km
-            </div>
-
-            <p class="mb-0 mt-2">
-              <%= orden.problema_reportado %>
+              <a href="/clientes/<%= vehiculo.cliente.id %>">
+                <%= vehiculo.cliente.nombre %>
+              </a>
             </p>
-          </div>
+          <% } %>
+        </div>
+
+        <a
+          href="/ordenes/nueva/<%= vehiculo.id %>"
+          class="btn btn-danger"
+        >
+          <i class="fa fa-plus" aria-hidden="true"></i>
+          Crear orden
         </a>
-      <% }) %>
-    </div>
+      </header>
+
+      <div class="vehicle-detail-stats">
+
+        <article class="vehicle-stat-card">
+          <span>Kilometraje actual</span>
+
+          <strong>
+            <%=
+              Number(
+                vehiculo.kilometrajeActual ??
+                vehiculo.kilometraje_actual ??
+                0
+              ).toLocaleString('es-CR')
+            %>
+            km
+          </strong>
+        </article>
+
+        <article class="vehicle-stat-card">
+          <span>Kilómetros entre visitas</span>
+
+          <strong>
+            <%=
+              Number(kilometrosRecorridos || 0)
+                .toLocaleString('es-CR')
+            %>
+            km
+          </strong>
+        </article>
+
+        <article class="vehicle-stat-card">
+          <span>Cantidad de órdenes</span>
+
+          <strong>
+            <%= Array.isArray(ordenes) ? ordenes.length : 0 %>
+          </strong>
+        </article>
+
+      </div>
+
+      <div class="vehicle-information-card">
+        <div class="order-detail-section-title">
+          <i class="fa fa-car" aria-hidden="true"></i>
+
+          <div>
+            <span>Información general</span>
+            <h3>Datos del vehículo</h3>
+          </div>
+        </div>
+
+        <div class="vehicle-information-grid">
+
+          <div>
+            <span>Placa</span>
+            <strong><%= vehiculo.placa || 'No indicada' %></strong>
+          </div>
+
+          <div>
+            <span>Marca</span>
+            <strong><%= vehiculo.marca || 'No indicada' %></strong>
+          </div>
+
+          <div>
+            <span>Modelo</span>
+            <strong><%= vehiculo.modelo || 'No indicado' %></strong>
+          </div>
+
+          <div>
+            <span>Año</span>
+            <strong><%= vehiculo.anio || 'No indicado' %></strong>
+          </div>
+
+          <div>
+            <span>Color</span>
+            <strong><%= vehiculo.color || 'No indicado' %></strong>
+          </div>
+
+          <div>
+            <span>Combustible</span>
+            <strong>
+              <%= vehiculo.combustible || 'No indicado' %>
+            </strong>
+          </div>
+
+          <div>
+            <span>Transmisión</span>
+            <strong>
+              <%= vehiculo.transmision || 'No indicada' %>
+            </strong>
+          </div>
+
+          <div>
+            <span>Tracción</span>
+            <strong><%= vehiculo.traccion || 'No indicada' %></strong>
+          </div>
+
+          <div>
+            <span>Motor</span>
+            <strong><%= vehiculo.motor || 'No indicado' %></strong>
+          </div>
+
+          <div>
+            <span>Cilindraje</span>
+            <strong>
+              <%= vehiculo.cilindraje || 'No indicado' %>
+            </strong>
+          </div>
+
+          <div>
+            <span>VIN</span>
+            <strong><%= vehiculo.vin || 'No indicado' %></strong>
+          </div>
+
+          <div>
+            <span>Número de motor</span>
+            <strong>
+              <%=
+                vehiculo.numeroMotor ||
+                vehiculo.numero_motor ||
+                'No indicado'
+              %>
+            </strong>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="vehicle-orders-card">
+
+        <div class="order-detail-section-title">
+          <i class="fa fa-wrench" aria-hidden="true"></i>
+
+          <div>
+            <span>Historial</span>
+            <h3>Órdenes de trabajo</h3>
+          </div>
+        </div>
+
+        <% if (!ordenes || !ordenes.length) { %>
+          <div class="empty-state">
+            <i class="fa fa-clipboard" aria-hidden="true"></i>
+
+            <h4>No hay órdenes registradas</h4>
+
+            <p>
+              Este vehículo todavía no tiene órdenes de trabajo.
+            </p>
+
+            <a
+              href="/ordenes/nueva/<%= vehiculo.id %>"
+              class="btn btn-danger"
+            >
+              Crear primera orden
+            </a>
+          </div>
+        <% } %>
+
+        <% if (ordenes && ordenes.length) { %>
+          <div class="vehicle-orders-list">
+
+            <% ordenes.forEach(orden => { %>
+              <%
+                const numeroOrden =
+                  orden.numeroOrden ||
+                  orden.numero_orden ||
+                  'Sin número';
+
+                const nombreEstado =
+                  orden.estado?.nombre ||
+                  orden.estadoNombre ||
+                  'Sin estado';
+
+                const fechaOrden =
+                  orden.fechaRecepcion ||
+                  orden.fecha_recepcion ||
+                  orden.createdAt ||
+                  null;
+
+                const kilometrajeOrden =
+                  orden.kilometrajeIngreso ??
+                  orden.kilometraje_ingreso ??
+                  0;
+
+                const problemaOrden =
+                  orden.problemaReportado ||
+                  orden.problema_reportado ||
+                  'Sin problema reportado';
+              %>
+
+              <a
+                href="/ordenes/<%= orden.id %>"
+                class="vehicle-order-item"
+              >
+                <div class="vehicle-order-header">
+                  <div>
+                    <strong><%= numeroOrden %></strong>
+
+                    <span>
+                      <% if (fechaOrden) { %>
+                        <%= new Date(fechaOrden)
+                          .toLocaleDateString('es-CR') %>
+                      <% } else { %>
+                        Sin fecha
+                      <% } %>
+                    </span>
+                  </div>
+
+                  <span class="order-status-badge">
+                    <%= nombreEstado %>
+                  </span>
+                </div>
+
+                <div class="vehicle-order-meta">
+                  <span>
+                    <i class="fa fa-tachometer" aria-hidden="true"></i>
+
+                    <%=
+                      Number(kilometrajeOrden || 0)
+                        .toLocaleString('es-CR')
+                    %>
+                    km
+                  </span>
+
+                  <span>
+                    <i class="fa fa-flag" aria-hidden="true"></i>
+                    <%= orden.prioridad || 'Normal' %>
+                  </span>
+                </div>
+
+                <p>
+                  <%= problemaOrden %>
+                </p>
+              </a>
+            <% }) %>
+
+          </div>
+        <% } %>
+
+      </div>
+
+      <div class="responsive-form-actions">
+        <% if (vehiculo.cliente?.id) { %>
+          <a
+            href="/clientes/<%= vehiculo.cliente.id %>"
+            class="btn btn-outline-secondary"
+          >
+            <i class="fa fa-arrow-left" aria-hidden="true"></i>
+            Volver al cliente
+          </a>
+        <% } %>
+
+        <a
+          href="/ordenes/nueva/<%= vehiculo.id %>"
+          class="btn btn-danger"
+        >
+          <i class="fa fa-plus" aria-hidden="true"></i>
+          Crear orden
+        </a>
+      </div>
+
+    </section>
+
   </div>
 </div>

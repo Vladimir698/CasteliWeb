@@ -16,7 +16,7 @@ async function mostrarFormularioNuevo(req, res) {
       return res.status(404).send('Cliente no encontrado.');
     }
 
-    return res.render('vehiculos/nuevo', {
+    return res.render('vehiculos/nuevoVehiculo', {
       titulo: 'Registrar vehículo',
       cliente,
       vehiculo: {},
@@ -68,7 +68,7 @@ async function crear(req, res) {
     }
 
     if (errores.length) {
-      return res.status(400).render('vehiculos/nuevo', {
+      return res.status(400).render('vehiculos/nuevoVehiculo', {
         titulo: 'Registrar vehículo',
         cliente,
         vehiculo: req.body,
@@ -143,7 +143,7 @@ async function verDetalle(req, res) {
         kilometrajeMasReciente - kilometrajeMasAntiguo;
     }
 
-    return res.render('vehiculos/detalle', {
+    return res.render('vehiculos/detalleVehiculo', {
       titulo: `${vehiculo.placa} - ${vehiculo.marca}`,
       vehiculo,
       ordenes,

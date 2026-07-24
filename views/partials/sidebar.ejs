@@ -1,71 +1,96 @@
 <% const rol = usuario ? usuario.rol : ''; %>
 
-<div class="sidebar" data-color="white" data-active-color="primary">
-  <div class="logo">
+<div class="sidebar" data-color="black" data-active-color="danger">
+
+  <div class="logo casteli-sidebar-logo">
     <a href="/home" class="simple-text logo-normal">
-      <img src="/images/logo-ascopa.png" class="sidebar-logo">
+      <img
+        src="/images/logo-casteli.png"
+        alt="Casteli Automotriz"
+        class="casteli-logo-img"
+      >
     </a>
   </div>
 
   <div class="sidebar-wrapper">
     <ul class="nav">
 
-      <% if (rol === 'Administrador' || rol === 'Profesor') { %>
+      <li>
+        <a href="/home">
+          <i class="nc-icon nc-bank"></i>
+          <p>Inicio</p>
+        </a>
+      </li>
+
+      <% if (
+        rol === 'Administrador' ||
+        rol === 'Mecanico_Administrativo'
+      ) { %>
+
         <li>
-          <a data-toggle="collapse" href="#menuEstudiantes" aria-expanded="false">
-            <i class="nc-icon nc-hat-3"></i>
-            <p>
-              Estudiantes
-              <b class="caret"></b>
-            </p>
+          <a href="/clientes">
+            <i class="nc-icon nc-single-02"></i>
+            <p>Clientes</p>
           </a>
-
-          <div class="collapse" id="menuEstudiantes">
-            <ul class="nav">
-              <li>
-                <a href="/expedientes/dashboard">
-                  <i class="nc-icon nc-single-02"></i>
-                  <span class="sidebar-normal"> Listado de Estudiantes </span>
-                </a>
-              </li>
-
-              <li>
-                <a href="/expedientes">
-                  <i class="nc-icon nc-book-bookmark"></i>
-                  <span class="sidebar-normal"> Expedientes de Estudiantes </span>
-                </a>
-              </li>
-
-              <li>
-                <a href="/encargados">
-                  <i class="nc-icon nc-single-copy-04"></i>
-                  <span class="sidebar-normal"> Encargados </span>
-                </a>
-              </li>
-            </ul>
-          </div>
         </li>
+
+        <li>
+          <a href="/vehiculos">
+            <i class="nc-icon nc-bus-front-12"></i>
+            <p>Vehículos</p>
+          </a>
+        </li>
+
       <% } %>
 
-      <% if (rol === 'Administrador') { %>
-        <li>
-          <a href="/facturacion">
-            <i class="nc-icon nc-money-coins"></i>
-            <p>Facturación</p>
-          </a>
-        </li>
+      <li>
+        <a href="/ordenes">
+          <i class="nc-icon nc-settings"></i>
+          <p>Órdenes de trabajo</p>
+        </a>
+      </li>
 
-        <li>
-          <a href="/empleados">
-            <i class="nc-icon nc-single-02"></i>
-            <p>Empleados</p>
-          </a>
-        </li>
+      <% if (
+        rol === 'Administrador' ||
+        rol === 'Mecanico_Administrativo'
+      ) { %>
 
         <li>
           <a href="/proveedores">
             <i class="nc-icon nc-delivery-fast"></i>
             <p>Proveedores</p>
+          </a>
+        </li>
+
+        <li>
+          <a href="/inventario">
+            <i class="nc-icon nc-box-2"></i>
+            <p>Inventario</p>
+          </a>
+        </li>
+
+        <li>
+          <a href="/compras">
+            <i class="nc-icon nc-cart-simple"></i>
+            <p>Compras</p>
+          </a>
+        </li>
+
+        <li>
+          <a href="/prefacturas">
+            <i class="nc-icon nc-paper"></i>
+            <p>Prefacturas</p>
+          </a>
+        </li>
+
+      <% } %>
+
+      <% if (rol === 'Administrador') { %>
+
+        <li>
+          <a href="/usuarios">
+            <i class="nc-icon nc-circle-10"></i>
+            <p>Usuarios</p>
           </a>
         </li>
 
@@ -77,11 +102,12 @@
         </li>
 
         <li>
-          <a href="/usuarios">
-            <i class="nc-icon nc-circle-10"></i>
-            <p>Usuarios</p>
+          <a href="/configuracion">
+            <i class="nc-icon nc-settings-gear-65"></i>
+            <p>Configuración</p>
           </a>
         </li>
+
       <% } %>
 
     </ul>

@@ -46,7 +46,7 @@ async function listar(req, res) {
       order: [['nombre', 'ASC']]
     });
 
-    return res.render('clientes/index', {
+    return res.render('clientes/clientes', {
       titulo: 'Clientes',
       clientes,
       busqueda
@@ -61,7 +61,7 @@ async function listar(req, res) {
 }
 
 function mostrarFormularioNuevo(req, res) {
-  return res.render('clientes/nuevo', {
+  return res.render('clientes/nuevoCliente', {
     titulo: 'Nuevo cliente',
     cliente: {},
     errores: []
@@ -80,7 +80,7 @@ async function crear(req, res) {
     } = req.body;
 
     if (!nombre?.trim()) {
-      return res.status(400).render('clientes/nuevo', {
+      return res.status(400).render('clientes/nuevoCliente', {
         titulo: 'Nuevo cliente',
         cliente: req.body,
         errores: ['El nombre del cliente es obligatorio.']
@@ -100,7 +100,7 @@ async function crear(req, res) {
   } catch (error) {
     console.error('Error al crear cliente:', error);
 
-    return res.status(500).render('clientes/nuevo', {
+    return res.status(500).render('clientes/nuevoCliente', {
       titulo: 'Nuevo cliente',
       cliente: req.body,
       errores: [
@@ -139,7 +139,7 @@ async function verDetalle(req, res) {
       return res.status(404).send('Cliente no encontrado.');
     }
 
-    return res.render('clientes/detalle', {
+    return res.render('clientes/detalleCliente', {
       titulo: cliente.nombre,
       cliente
     });

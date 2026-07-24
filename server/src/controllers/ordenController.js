@@ -1,24 +1,27 @@
 'use strict';
 
+const { Op } = require('sequelize');
+
 const {
   Cliente,
   Vehiculo,
-  OrdenTrabajo
+  OrdenTrabajo,
+  EstadoOrden
 } = require('../models');
 
 async function listarActivas(req, res) {
   try {
+    const estadosActivos = [
+      'Recibida',
+      'Diagnóstico',
+      'Esperando aprobación',
+      'Esperando repuestos',
+      'Reparación',
+      'Control de calidad',
+      'Lista para facturar'
+    ];
+
     const ordenes = await OrdenTrabajo.findAll({
-      where: {
-        estado: [
-          'recibida',
-          'diagnostico',
-          'esperando_aprobacion',
-          'esperando_repuestos',
-          'reparacion',
-          'lista_para_facturar'
-        ]
-      },
       include: [
         {
           model: Vehiculo,
@@ -29,20 +32,32 @@ async function listarActivas(req, res) {
               as: 'cliente'
             }
           ]
+        },
+        {
+          model: EstadoOrden,
+          as: 'estado',
+          required: true,
+          where: {
+            nombre: {
+              [Op.in]: estadosActivos
+            }
+          }
         }
       ],
-      order: [['fecha_ingreso', 'DESC']]
+      order: [
+        ['fechaRecepcion', 'DESC']
+      ]
     });
 
-    return res.render('ordenes/index', {
+    return res.render('ordenes/ordenes', {
       titulo: 'Órdenes activas',
       ordenes
     });
   } catch (error) {
-    console.error('Error al listar órdenes:', error);
+    console.error('ERROR AL CARGAR ÓRDENES:', error);
 
     return res.status(500).send(
-      'No fue posible cargar las órdenes.'
+      `No fue posible cargar las órdenes: ${error.message}`
     );
   }
 }
@@ -50,6 +65,10 @@ async function listarActivas(req, res) {
 async function mostrarFormularioNuevo(req, res) {
   try {
     const vehiculoId = Number(req.params.vehiculoId);
+
+    if (!Number.isInteger(vehiculoId) || vehiculoId <= 0) {
+      return res.status(400).send('Identificador de vehículo inválido.');
+    }
 
     const vehiculo = await Vehiculo.findByPk(vehiculoId, {
       include: [
@@ -64,7 +83,7 @@ async function mostrarFormularioNuevo(req, res) {
       return res.status(404).send('Vehículo no encontrado.');
     }
 
-    return res.render('ordenes/nueva', {
+    return res.render('ordenes/nuevaOrden', {
       titulo: 'Nueva orden de trabajo',
       vehiculo,
       orden: {},
@@ -90,6 +109,10 @@ async function crear(req, res) {
       observaciones
     } = req.body;
 
+    if (!Number.isInteger(vehiculoId) || vehiculoId <= 0) {
+      return res.status(400).send('Identificador de vehículo inválido.');
+    }
+
     const vehiculo = await Vehiculo.findByPk(vehiculoId, {
       include: [
         {
@@ -104,10 +127,13 @@ async function crear(req, res) {
     }
 
     const errores = [];
+    const kilometraje = Number(kilometraje_ingreso);
 
     if (
-      !kilometraje_ingreso ||
-      Number(kilometraje_ingreso) < 0
+      kilometraje_ingreso === undefined ||
+      kilometraje_ingreso === '' ||
+      !Number.isFinite(kilometraje) ||
+      kilometraje < 0
     ) {
       errores.push('Debe indicar un kilometraje válido.');
     }
@@ -119,7 +145,7 @@ async function crear(req, res) {
     }
 
     if (errores.length) {
-      return res.status(400).render('ordenes/nueva', {
+      return res.status(400).render('ordenes/nuevaOrden', {
         titulo: 'Nueva orden de trabajo',
         vehiculo,
         orden: req.body,
@@ -127,21 +153,42 @@ async function crear(req, res) {
       });
     }
 
+    const estadoRecibida = await EstadoOrden.findOne({
+      where: {
+        nombre: 'Recibida'
+      }
+    });
+
+    if (!estadoRecibida) {
+      return res.status(500).send(
+        'No existe el estado inicial "Recibida".'
+      );
+    }
+
     const numeroOrden = await generarNumeroOrden();
 
     const orden = await OrdenTrabajo.create({
-      numero_orden: numeroOrden,
-      vehiculo_id: vehiculoId,
-      creada_por: req.session.usuario?.id || null,
-      kilometraje_ingreso: Number(kilometraje_ingreso),
-      nivel_combustible: nivel_combustible || null,
-      problema_reportado: problema_reportado.trim(),
-      observaciones: observaciones?.trim() || null,
-      estado: 'recibida'
+      numeroOrden,
+      vehiculoId,
+      estadoId: estadoRecibida.id,
+
+      usuarioRecepcionaId: null,
+
+      kilometrajeIngreso: kilometraje,
+      nivelCombustible:
+        nivel_combustible?.trim() || null,
+
+      problemaReportado:
+        problema_reportado.trim(),
+
+      observaciones:
+        observaciones?.trim() || null,
+
+      prioridad: 'Normal'
     });
 
     await vehiculo.update({
-      kilometraje_actual: Number(kilometraje_ingreso)
+      kilometrajeActual: kilometraje
     });
 
     return res.redirect(`/ordenes/${orden.id}`);
@@ -149,7 +196,7 @@ async function crear(req, res) {
     console.error('Error al crear orden:', error);
 
     return res.status(500).send(
-      'No fue posible crear la orden de trabajo.'
+      `No fue posible crear la orden de trabajo: ${error.message}`
     );
   }
 }
@@ -157,6 +204,10 @@ async function crear(req, res) {
 async function verDetalle(req, res) {
   try {
     const ordenId = Number(req.params.id);
+
+    if (!Number.isInteger(ordenId) || ordenId <= 0) {
+      return res.status(400).send('Identificador de orden inválido.');
+    }
 
     const orden = await OrdenTrabajo.findByPk(ordenId, {
       include: [
@@ -169,6 +220,10 @@ async function verDetalle(req, res) {
               as: 'cliente'
             }
           ]
+        },
+        {
+          model: EstadoOrden,
+          as: 'estado'
         }
       ]
     });
@@ -177,15 +232,15 @@ async function verDetalle(req, res) {
       return res.status(404).send('Orden no encontrada.');
     }
 
-    return res.render('ordenes/detalle', {
-      titulo: orden.numero_orden,
+    return res.render('ordenes/detalleOrden', {
+      titulo: orden.numeroOrden,
       orden
     });
   } catch (error) {
     console.error('Error al cargar orden:', error);
 
     return res.status(500).send(
-      'No fue posible cargar la orden.'
+      `No fue posible cargar la orden: ${error.message}`
     );
   }
 }
@@ -195,17 +250,19 @@ async function generarNumeroOrden() {
 
   const ultimaOrden = await OrdenTrabajo.findOne({
     where: {
-      numero_orden: {
-        [require('sequelize').Op.like]: `OT-${anio}-%`
+      numeroOrden: {
+        [Op.like]: `OT-${anio}-%`
       }
     },
-    order: [['id', 'DESC']]
+    order: [
+      ['id', 'DESC']
+    ]
   });
 
   let consecutivo = 1;
 
   if (ultimaOrden) {
-    const partes = ultimaOrden.numero_orden.split('-');
+    const partes = ultimaOrden.numeroOrden.split('-');
     consecutivo = Number(partes[2] || 0) + 1;
   }
 

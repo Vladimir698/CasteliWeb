@@ -1,94 +1,29 @@
 'use strict';
 
 module.exports = (sequelize, DataTypes) => {
-  const Vehiculo = sequelize.define(
-    'Vehiculo',
-    {
-      id: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
-        primaryKey: true
-      },
-
-      cliente_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-      },
-
-      placa: {
-        type: DataTypes.STRING(20),
-        allowNull: false,
-        unique: true
-      },
-
-      marca: {
-        type: DataTypes.STRING(80),
-        allowNull: false
-      },
-
-      modelo: {
-        type: DataTypes.STRING(100),
-        allowNull: false
-      },
-
-      anio: {
-        type: DataTypes.INTEGER,
-        allowNull: true
-      },
-
-      motor: {
-        type: DataTypes.STRING(100),
-        allowNull: true
-      },
-
-      vin: {
-        type: DataTypes.STRING(50),
-        allowNull: true,
-        unique: true
-      },
-
-      color: {
-        type: DataTypes.STRING(50),
-        allowNull: true
-      },
-
-      kilometraje_actual: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        validate: {
-          min: 0
-        }
-      },
-
-      notas: {
-        type: DataTypes.TEXT,
-        allowNull: true
-      },
-
-      activo: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: true
-      }
-    },
-    {
-      tableName: 'vehiculos',
-      timestamps: true,
-      underscored: true
-    }
-  );
-
-  Vehiculo.associate = models => {
-    Vehiculo.belongsTo(models.Cliente, {
-      foreignKey: 'cliente_id',
-      as: 'cliente'
-    });
-
-    Vehiculo.hasMany(models.OrdenTrabajo, {
-      foreignKey: 'vehiculo_id',
-      as: 'ordenes'
-    });
-  };
+  const Vehiculo = sequelize.define('Vehiculo', {
+    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    clienteId: { type: DataTypes.INTEGER, allowNull: true, field: 'cliente_id' },
+    placa: { type: DataTypes.STRING(20), allowNull: false, field: 'placa', unique: true },
+    marca: { type: DataTypes.STRING(80), allowNull: false, field: 'marca' },
+    modelo: { type: DataTypes.STRING(80), allowNull: false, field: 'modelo' },
+    anio: { type: DataTypes.INTEGER, allowNull: true, field: 'anio' },
+    vin: { type: DataTypes.STRING(50), allowNull: true, field: 'vin' },
+    numeroMotor: { type: DataTypes.STRING(50), allowNull: true, field: 'numero_motor' },
+    motor: { type: DataTypes.STRING(80), allowNull: true, field: 'motor' },
+    color: { type: DataTypes.STRING(40), allowNull: true, field: 'color' },
+    combustible: { type: DataTypes.STRING(30), allowNull: true, field: 'combustible' },
+    transmision: { type: DataTypes.STRING(30), allowNull: true, field: 'transmision' },
+    traccion: { type: DataTypes.STRING(30), allowNull: true, field: 'traccion' },
+    cilindraje: { type: DataTypes.STRING(30), allowNull: true, field: 'cilindraje' },
+    kilometrajeActual: { type: DataTypes.INTEGER, allowNull: false, field: 'kilometraje_actual', defaultValue: 0 },
+    activo: { type: DataTypes.BOOLEAN, allowNull: false, field: 'activo', defaultValue: true },
+  }, {
+    tableName: 'vehiculos',
+    freezeTableName: true,
+    underscored: true,
+    timestamps: true
+  });
 
   return Vehiculo;
 };

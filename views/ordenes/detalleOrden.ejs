@@ -1,0 +1,267 @@
+<div class="content">
+  <div class="container-fluid">
+
+    <section class="responsive-form-card">
+
+      <header class="responsive-form-header">
+        <div>
+          <span class="form-eyebrow">ORDEN DE TRABAJO</span>
+
+          <h2>
+            <%= orden.numeroOrden || orden.numero_orden %>
+          </h2>
+
+          <p>
+            Información general, vehículo asociado y estado actual.
+          </p>
+        </div>
+
+        <div class="d-none d-md-flex align-items-center">
+          <i
+            class="fa fa-wrench"
+            aria-hidden="true"
+            style="font-size: 40px; color: #d71920;"
+          ></i>
+        </div>
+      </header>
+
+      <% const vehiculo = orden.vehiculo || {}; %>
+      <% const cliente = vehiculo.cliente || {}; %>
+      <% const estado = orden.estado || {}; %>
+
+      <div class="order-detail-grid">
+
+        <!-- Resumen principal -->
+        <article class="order-detail-card order-detail-card-primary">
+          <div class="order-detail-card-header">
+            <div>
+              <span class="order-detail-label">Estado actual</span>
+
+              <h3>
+                <%= estado.nombre || 'Sin estado asignado' %>
+              </h3>
+            </div>
+
+            <span
+              class="order-status-badge
+              <%= estado.nombre === 'Recibida'
+                ? 'status-received'
+                : ''
+              %>
+              <%= estado.nombre === 'Diagnóstico'
+                ? 'status-diagnosis'
+                : ''
+              %>
+              <%= estado.nombre === 'Reparación'
+                ? 'status-repair'
+                : ''
+              %>
+              <%= estado.nombre === 'Lista para facturar'
+                ? 'status-ready'
+                : ''
+              %>"
+            >
+              <%= estado.nombre || 'Sin estado' %>
+            </span>
+          </div>
+
+          <div class="order-main-data">
+            <div class="order-data-item">
+              <span>Prioridad</span>
+              <strong><%= orden.prioridad || 'Normal' %></strong>
+            </div>
+
+            <div class="order-data-item">
+              <span>Fecha de recepción</span>
+              <strong>
+                <% if (orden.fechaRecepcion || orden.fecha_recepcion) { %>
+                  <%= new Date(
+                    orden.fechaRecepcion || orden.fecha_recepcion
+                  ).toLocaleString('es-CR') %>
+                <% } else { %>
+                  Sin fecha
+                <% } %>
+              </strong>
+            </div>
+
+            <div class="order-data-item">
+              <span>Kilometraje de ingreso</span>
+              <strong>
+                <%=
+                  orden.kilometrajeIngreso ??
+                  orden.kilometraje_ingreso ??
+                  0
+                %>
+                km
+              </strong>
+            </div>
+
+            <div class="order-data-item">
+              <span>Nivel de combustible</span>
+              <strong>
+                <%=
+                  orden.nivelCombustible ||
+                  orden.nivel_combustible ||
+                  'No indicado'
+                %>
+              </strong>
+            </div>
+          </div>
+        </article>
+
+        <!-- Vehículo -->
+        <article class="order-detail-card">
+          <div class="order-detail-section-title">
+            <i class="fa fa-car" aria-hidden="true"></i>
+
+            <div>
+              <span>Vehículo</span>
+              <h3>
+                <%= vehiculo.placa || 'Sin placa' %>
+              </h3>
+            </div>
+          </div>
+
+          <div class="order-information-list">
+            <div>
+              <span>Marca y modelo</span>
+              <strong>
+                <%= vehiculo.marca || 'Sin marca' %>
+                <%= vehiculo.modelo || '' %>
+              </strong>
+            </div>
+
+            <div>
+              <span>Año</span>
+              <strong><%= vehiculo.anio || 'No indicado' %></strong>
+            </div>
+
+            <div>
+              <span>Color</span>
+              <strong><%= vehiculo.color || 'No indicado' %></strong>
+            </div>
+
+            <div>
+              <span>VIN</span>
+              <strong><%= vehiculo.vin || 'No indicado' %></strong>
+            </div>
+          </div>
+
+          <% if (vehiculo.id) { %>
+            <a
+              href="/vehiculos/<%= vehiculo.id %>"
+              class="btn btn-outline-secondary btn-block mt-3"
+            >
+              <i class="fa fa-eye" aria-hidden="true"></i>
+              Ver vehículo
+            </a>
+          <% } %>
+        </article>
+
+        <!-- Cliente -->
+        <article class="order-detail-card">
+          <div class="order-detail-section-title">
+            <i class="fa fa-user" aria-hidden="true"></i>
+
+            <div>
+              <span>Cliente</span>
+              <h3>
+                <%= cliente.nombre || 'Sin cliente asignado' %>
+              </h3>
+            </div>
+          </div>
+
+          <div class="order-information-list">
+            <div>
+              <span>Identificación</span>
+              <strong>
+                <%= cliente.identificacion || 'No indicada' %>
+              </strong>
+            </div>
+
+            <div>
+              <span>Teléfono</span>
+              <strong>
+                <%= cliente.telefono || 'No indicado' %>
+              </strong>
+            </div>
+
+            <div>
+              <span>Correo</span>
+              <strong>
+                <%= cliente.correo || 'No indicado' %>
+              </strong>
+            </div>
+          </div>
+
+          <% if (cliente.id) { %>
+            <a
+              href="/clientes/<%= cliente.id %>"
+              class="btn btn-outline-secondary btn-block mt-3"
+            >
+              <i class="fa fa-eye" aria-hidden="true"></i>
+              Ver cliente
+            </a>
+          <% } %>
+        </article>
+
+        <!-- Problema reportado -->
+        <article class="order-detail-card order-detail-full">
+          <div class="order-detail-section-title">
+            <i class="fa fa-comment" aria-hidden="true"></i>
+
+            <div>
+              <span>Recepción</span>
+              <h3>Problema reportado</h3>
+            </div>
+          </div>
+
+          <div class="order-text-block">
+            <%=
+              orden.problemaReportado ||
+              orden.problema_reportado ||
+              'No se registró un problema.'
+            %>
+          </div>
+        </article>
+
+        <!-- Observaciones -->
+        <article class="order-detail-card order-detail-full">
+          <div class="order-detail-section-title">
+            <i class="fa fa-clipboard" aria-hidden="true"></i>
+
+            <div>
+              <span>Información adicional</span>
+              <h3>Observaciones</h3>
+            </div>
+          </div>
+
+          <div class="order-text-block">
+            <%= orden.observaciones || 'No hay observaciones registradas.' %>
+          </div>
+        </article>
+
+      </div>
+
+      <div class="responsive-form-actions">
+        <a
+          href="/ordenes"
+          class="btn btn-outline-secondary"
+        >
+          <i class="fa fa-arrow-left" aria-hidden="true"></i>
+          Volver a órdenes
+        </a>
+
+        <a
+          href="/vehiculos/<%= vehiculo.id %>"
+          class="btn btn-danger"
+        >
+          <i class="fa fa-car" aria-hidden="true"></i>
+          Ver vehículo
+        </a>
+      </div>
+
+    </section>
+
+  </div>
+</div>

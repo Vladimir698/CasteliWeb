@@ -1,93 +1,27 @@
 'use strict';
 
 module.exports = (sequelize, DataTypes) => {
-  const OrdenTrabajo = sequelize.define(
-    'OrdenTrabajo',
-    {
-      id: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
-        primaryKey: true
-      },
-
-      numero_orden: {
-        type: DataTypes.STRING(30),
-        allowNull: false,
-        unique: true
-      },
-
-      vehiculo_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-      },
-
-      creada_por: {
-        type: DataTypes.INTEGER,
-        allowNull: true
-      },
-
-      fecha_ingreso: {
-        type: DataTypes.DATE,
-        allowNull: false,
-        defaultValue: DataTypes.NOW
-      },
-
-      fecha_salida: {
-        type: DataTypes.DATE,
-        allowNull: true
-      },
-
-      kilometraje_ingreso: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        validate: {
-          min: 0
-        }
-      },
-
-      nivel_combustible: {
-        type: DataTypes.STRING(30),
-        allowNull: true
-      },
-
-      problema_reportado: {
-        type: DataTypes.TEXT,
-        allowNull: false
-      },
-
-      estado: {
-        type: DataTypes.ENUM(
-          'recibida',
-          'diagnostico',
-          'esperando_aprobacion',
-          'esperando_repuestos',
-          'reparacion',
-          'lista_para_facturar',
-          'finalizada',
-          'cancelada'
-        ),
-        allowNull: false,
-        defaultValue: 'recibida'
-      },
-
-      observaciones: {
-        type: DataTypes.TEXT,
-        allowNull: true
-      }
-    },
-    {
-      tableName: 'ordenes_trabajo',
-      timestamps: true,
-      underscored: true
-    }
-  );
-
-  OrdenTrabajo.associate = models => {
-    OrdenTrabajo.belongsTo(models.Vehiculo, {
-      foreignKey: 'vehiculo_id',
-      as: 'vehiculo'
-    });
-  };
+  const OrdenTrabajo = sequelize.define('OrdenTrabajo', {
+    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    numeroOrden: { type: DataTypes.STRING(30), allowNull: false, field: 'numero_orden', unique: true },
+    vehiculoId: { type: DataTypes.INTEGER, allowNull: true, field: 'vehiculo_id' },
+    estadoId: { type: DataTypes.INTEGER, allowNull: true, field: 'estado_id' },
+    usuarioRecepcionaId: { type: DataTypes.INTEGER, allowNull: true, field: 'usuario_recepciona' },
+    usuarioAsignadoId: { type: DataTypes.INTEGER, allowNull: true, field: 'usuario_asignado' },
+    fechaRecepcion: { type: DataTypes.DATE, allowNull: false, field: 'fecha_recepcion', defaultValue: DataTypes.NOW },
+    fechaInicio: { type: DataTypes.DATE, allowNull: true, field: 'fecha_inicio' },
+    fechaFin: { type: DataTypes.DATE, allowNull: true, field: 'fecha_fin' },
+    kilometrajeIngreso: { type: DataTypes.INTEGER, allowNull: false, field: 'kilometraje_ingreso' },
+    nivelCombustible: { type: DataTypes.STRING(30), allowNull: true, field: 'nivel_combustible' },
+    prioridad: { type: DataTypes.STRING(20), allowNull: false, field: 'prioridad', defaultValue: 'Normal' },
+    problemaReportado: { type: DataTypes.TEXT, allowNull: false, field: 'problema_reportado' },
+    observaciones: { type: DataTypes.TEXT, allowNull: true, field: 'observaciones' },
+  }, {
+    tableName: 'ordenes_trabajo',
+    freezeTableName: true,
+    underscored: true,
+    timestamps: true
+  });
 
   return OrdenTrabajo;
 };

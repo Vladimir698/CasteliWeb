@@ -1,92 +1,247 @@
-<div class="container py-4">
-  <div class="card border-0 shadow-sm">
-    <div class="card-body">
-      <h1 class="h3">Nueva orden de trabajo</h1>
+<div class="content">
+  <div class="container-fluid">
 
-      <p class="text-muted">
-        <strong><%= vehiculo.placa %></strong> ·
-        <%= vehiculo.marca %>
-        <%= vehiculo.modelo %>
-        · Cliente:
-        <%= vehiculo.cliente.nombre %>
-      </p>
+    <section class="responsive-form-card">
 
-      <% if (errores.length) { %>
-        <div class="alert alert-danger">
-          <% errores.forEach(error => { %>
-            <div><%= error %></div>
-          <% }) %>
+      <header class="responsive-form-header">
+        <div>
+          <span class="form-eyebrow">NUEVA ORDEN DE TRABAJO</span>
+          <h2>Ingreso del vehículo al taller</h2>
+
+          <p>
+            Registre el kilometraje, condición inicial y problema
+            reportado por el cliente.
+          </p>
+        </div>
+
+        <div class="d-none d-md-flex align-items-center">
+          <i
+            class="fa fa-wrench"
+            aria-hidden="true"
+            style="font-size: 40px; color: #d71920;"
+          ></i>
+        </div>
+      </header>
+
+      <div class="vehicle-summary-card mb-4">
+        <div class="vehicle-summary-icon">
+          <i class="fa fa-car" aria-hidden="true"></i>
+        </div>
+
+        <div class="vehicle-summary-content">
+          <span>Vehículo</span>
+
+          <strong>
+            <%= vehiculo.placa %> ·
+            <%= vehiculo.marca %>
+            <%= vehiculo.modelo %>
+          </strong>
+
+          <small>
+            Cliente:
+            <%= vehiculo.cliente?.nombre || 'Sin cliente asignado' %>
+          </small>
+        </div>
+
+        <a
+          href="/vehiculos/<%= vehiculo.id %>"
+          class="btn btn-sm btn-outline-secondary"
+        >
+          Ver vehículo
+        </a>
+      </div>
+
+      <% if (errores && errores.length > 0) { %>
+        <div class="alert alert-danger" role="alert">
+          <strong>No fue posible crear la orden:</strong>
+
+          <ul class="mb-0 mt-2">
+            <% errores.forEach(error => { %>
+              <li><%= error %></li>
+            <% }) %>
+          </ul>
         </div>
       <% } %>
 
       <form
-        method="POST"
         action="/ordenes/vehiculo/<%= vehiculo.id %>"
+        method="POST"
+        autocomplete="off"
       >
-        <div class="row">
-          <div class="col-md-6 mb-3">
-            <label class="form-label">
-              Kilometraje de ingreso *
+        <div class="responsive-form-grid">
+
+          <div class="form-group">
+            <label for="kilometraje_ingreso">
+              Kilometraje de ingreso
+              <span class="text-danger">*</span>
             </label>
 
             <input
-              type="number"
+              id="kilometraje_ingreso"
               name="kilometraje_ingreso"
+              type="number"
               class="form-control"
               min="0"
-              value="<%= orden.kilometraje_ingreso || vehiculo.kilometraje_actual || '' %>"
+              step="1"
+              inputmode="numeric"
+              value="<%=
+                orden?.kilometraje_ingreso ??
+                orden?.kilometrajeIngreso ??
+                vehiculo?.kilometrajeActual ??
+                vehiculo?.kilometraje_actual ??
+                ''
+              %>"
+              placeholder="Ejemplo: 125000"
               required
+              autofocus
             >
+
+            <small class="form-text text-muted">
+              Kilometraje registrado anteriormente:
+              <%=
+                vehiculo?.kilometrajeActual ??
+                vehiculo?.kilometraje_actual ??
+                0
+              %> km
+            </small>
           </div>
 
-          <div class="col-md-6 mb-3">
-            <label class="form-label">
+          <div class="form-group">
+            <label for="nivel_combustible">
               Nivel de combustible
             </label>
 
             <select
+              id="nivel_combustible"
               name="nivel_combustible"
-              class="form-select"
+              class="form-control"
             >
               <option value="">Seleccione</option>
-              <option value="reserva">Reserva</option>
-              <option value="un_cuarto">1/4</option>
-              <option value="medio">1/2</option>
-              <option value="tres_cuartos">3/4</option>
-              <option value="lleno">Lleno</option>
+
+              <% [
+                'Vacío',
+                '1/4',
+                '1/2',
+                '3/4',
+                'Lleno'
+              ].forEach(opcion => { %>
+                <option
+                  value="<%= opcion %>"
+                  <%=
+                    (
+                      orden?.nivel_combustible ||
+                      orden?.nivelCombustible
+                    ) === opcion
+                      ? 'selected'
+                      : ''
+                  %>
+                >
+                  <%= opcion %>
+                </option>
+              <% }) %>
             </select>
           </div>
 
-          <div class="col-12 mb-3">
-            <label class="form-label">
-              Problema reportado *
+          <div class="form-group">
+            <label for="prioridad">
+              Prioridad
+            </label>
+
+            <select
+              id="prioridad"
+              name="prioridad"
+              class="form-control"
+            >
+              <% [
+                'Baja',
+                'Normal',
+                'Alta',
+                'Urgente'
+              ].forEach(opcion => { %>
+                <option
+                  value="<%= opcion %>"
+                  <%=
+                    (orden?.prioridad || 'Normal') === opcion
+                      ? 'selected'
+                      : ''
+                  %>
+                >
+                  <%= opcion %>
+                </option>
+              <% }) %>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="fecha_recepcion_visual">
+              Fecha de recepción
+            </label>
+
+            <input
+              id="fecha_recepcion_visual"
+              type="text"
+              class="form-control"
+              value="<%= new Date().toLocaleString('es-CR') %>"
+              readonly
+            >
+          </div>
+
+          <div class="form-group form-group-full">
+            <label for="problema_reportado">
+              Problema reportado por el cliente
+              <span class="text-danger">*</span>
             </label>
 
             <textarea
+              id="problema_reportado"
               name="problema_reportado"
               class="form-control"
-              rows="4"
+              rows="5"
+              placeholder="Describa con las palabras del cliente el problema o servicio solicitado"
               required
-            ><%= orden.problema_reportado || '' %></textarea>
+            ><%=
+              orden?.problema_reportado ||
+              orden?.problemaReportado ||
+              ''
+            %></textarea>
           </div>
 
-          <div class="col-12 mb-3">
-            <label class="form-label">
-              Observaciones de ingreso
+          <div class="form-group form-group-full">
+            <label for="observaciones">
+              Observaciones de recepción
             </label>
 
             <textarea
+              id="observaciones"
               name="observaciones"
               class="form-control"
-              rows="3"
-            ><%= orden.observaciones || '' %></textarea>
+              rows="4"
+              placeholder="Golpes visibles, accesorios entregados, testigos encendidos u otras condiciones"
+            ><%= orden?.observaciones || '' %></textarea>
           </div>
+
         </div>
 
-        <button class="btn btn-primary">
-          Crear orden
-        </button>
+        <div class="responsive-form-actions">
+          <a
+            href="/vehiculos/<%= vehiculo.id %>"
+            class="btn btn-outline-secondary"
+          >
+            <i class="fa fa-times" aria-hidden="true"></i>
+            Cancelar
+          </a>
+
+          <button
+            type="submit"
+            class="btn btn-danger"
+          >
+            <i class="fa fa-wrench" aria-hidden="true"></i>
+            Crear orden de trabajo
+          </button>
+        </div>
       </form>
-    </div>
+
+    </section>
+
   </div>
 </div>
