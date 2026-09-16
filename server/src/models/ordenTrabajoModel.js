@@ -16,6 +16,9 @@ module.exports = (sequelize, DataTypes) => {
     prioridad: { type: DataTypes.STRING(20), allowNull: false, field: 'prioridad', defaultValue: 'Normal' },
     problemaReportado: { type: DataTypes.TEXT, allowNull: false, field: 'problema_reportado' },
     observaciones: { type: DataTypes.TEXT, allowNull: true, field: 'observaciones' },
+    manoObra: { type: DataTypes.DECIMAL(12,2), allowNull: false, field: 'mano_obra', defaultValue: 0 },
+    otros: { type: DataTypes.DECIMAL(12,2), allowNull: false, field: 'otros', defaultValue: 0 },
+    descuento: { type: DataTypes.DECIMAL(12,2), allowNull: false, field: 'descuento', defaultValue: 0 }
   }, {
     tableName: 'ordenes_trabajo',
     freezeTableName: true,
