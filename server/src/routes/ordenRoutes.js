@@ -1,53 +1,14 @@
 'use strict';
-
-const express = require('express');
-const ordenController = require('../controllers/ordenController');
-
-const {
-  requiereLogin,
-  permitirRoles
-} = require('../middleware/authMiddleware');
-
-const router = express.Router();
-
+const express=require('express');
+const c=require('../controllers/ordenController');
+const {requiereLogin}=require('../middleware/authMiddleware');
+const router=express.Router();
 router.use(requiereLogin);
-
-router.get(
-  '/',
-  permitirRoles(
-    'administrador',
-    'mecanico_administrativo',
-    'mecanico'
-  ),
-  ordenController.listarActivas
-);
-
-router.get(
-  '/nueva/:vehiculoId',
-  permitirRoles(
-    'administrador',
-    'mecanico_administrativo'
-  ),
-  ordenController.mostrarFormularioNuevo
-);
-
-router.post(
-  '/vehiculo/:vehiculoId',
-  permitirRoles(
-    'administrador',
-    'mecanico_administrativo'
-  ),
-  ordenController.crear
-);
-
-router.get(
-  '/:id',
-  permitirRoles(
-    'administrador',
-    'mecanico_administrativo',
-    'mecanico'
-  ),
-  ordenController.verDetalle
-);
-
-module.exports = router;
+router.get('/',c.listarActivas);
+router.get('/nueva/:vehiculoId',c.mostrarFormularioNuevo);
+router.post('/vehiculo/:vehiculoId',c.crear);
+router.post('/:id/trabajos',c.agregarTrabajo);
+router.post('/:id/repuestos',c.agregarRepuesto);
+router.post('/:id/totales',c.actualizarTotales);
+router.get('/:id',c.verDetalle);
+module.exports=router;
