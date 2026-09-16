@@ -1,165 +1,111 @@
 'use strict';
 
-const {
-  Cliente,
-  Vehiculo,
-  OrdenTrabajo
-} = require('../models');
+const { Op } = require('sequelize');
+const { Cliente, Vehiculo, OrdenTrabajo, EstadoOrden, OrdenTrabajoDetalle, OrdenRepuesto } = require('../models');
 
-async function mostrarFormularioNuevo(req, res) {
+const normalizarPlaca = placa => String(placa || '').trim().toUpperCase().replace(/\s+/g, '');
+
+function mostrarBusqueda(req, res) {
+  return res.render('vehiculos/buscarVehiculo', { titulo: 'Buscar vehículo', placa: '', error: null, noEncontrado: false });
+}
+
+async function buscarPorPlaca(req, res) {
   try {
-    const clienteId = Number(req.params.clienteId);
-
-    const cliente = await Cliente.findByPk(clienteId);
-
-    if (!cliente) {
-      return res.status(404).send('Cliente no encontrado.');
-    }
-
-    return res.render('vehiculos/nuevoVehiculo', {
-      titulo: 'Registrar vehículo',
-      cliente,
-      vehiculo: {},
-      errores: []
-    });
+    const placa = normalizarPlaca(req.body.placa);
+    if (!placa) return res.status(400).render('vehiculos/buscarVehiculo', { titulo: 'Buscar vehículo', placa, error: 'Ingrese una placa.', noEncontrado: false });
+    const vehiculo = await Vehiculo.findOne({ where: { placa: { [Op.iLike]: placa } } });
+    if (vehiculo) return res.redirect(`/vehiculos/${vehiculo.id}`);
+    return res.render('vehiculos/buscarVehiculo', { titulo: 'Buscar vehículo', placa, error: null, noEncontrado: true });
   } catch (error) {
-    console.error('Error al abrir formulario:', error);
-
-    return res.status(500).send(
-      'No fue posible abrir el formulario.'
-    );
+    console.error(error);
+    return res.status(500).send('No fue posible buscar el vehículo.');
   }
 }
 
+async function mostrarFormularioNuevo(req, res) {
+  const clienteSeleccionadoId = Number(req.query.clienteId) || null;
+  return res.render('vehiculos/nuevoVehiculo', {
+    titulo: 'Registrar vehículo', vehiculo: { placa: req.query.placa || '' }, clienteSeleccionadoId, clienteSeleccionado: clienteSeleccionadoId ? await Cliente.findByPk(clienteSeleccionadoId) : null, errores: []
+  });
+}
+
+async function buscarClientes(req, res) {
+  const q = String(req.query.q || '').trim();
+  if (q.length < 2) return res.json([]);
+  const clientes = await Cliente.findAll({
+    where: { activo: true, [Op.or]: [
+      { nombre: { [Op.iLike]: `%${q}%` } }, { identificacion: { [Op.iLike]: `%${q}%` } }, { telefono: { [Op.iLike]: `%${q}%` } }
+    ]}, limit: 10, order: [['nombre', 'ASC']]
+  });
+  return res.json(clientes.map(c => ({ id: c.id, nombre: c.nombre, identificacion: c.identificacion, telefono: c.telefono })));
+}
+
 async function crear(req, res) {
+  const t = await Vehiculo.sequelize.transaction();
   try {
-    const clienteId = Number(req.params.clienteId);
+    const placa = normalizarPlaca(req.body.placa);
+    const kilometraje = Number(req.body.kilometraje_actual);
+    const modelo = String(req.body.modelo || '').trim();
+    const anio = req.body.anio ? Number(req.body.anio) : null;
+    if (!placa || !modelo || !Number.isFinite(kilometraje) || kilometraje < 0) throw new Error('Complete placa, modelo y kilometraje correctamente.');
 
-    const {
-      placa,
-      marca,
-      modelo,
-      anio,
-      motor,
-      vin,
-      color,
-      kilometraje_actual,
-      notas
-    } = req.body;
+    const duplicado = await Vehiculo.findOne({ where: { placa: { [Op.iLike]: placa } }, transaction: t });
+    if (duplicado) { await t.rollback(); return res.redirect(`/vehiculos/${duplicado.id}`); }
 
-    const cliente = await Cliente.findByPk(clienteId);
-
+    let cliente = req.body.cliente_id ? await Cliente.findByPk(Number(req.body.cliente_id), { transaction: t }) : null;
     if (!cliente) {
-      return res.status(404).send('Cliente no encontrado.');
+      const nombre = String(req.body.nombre_cliente || '').trim();
+      const identificacion = String(req.body.identificacion_cliente || '').trim();
+      const telefono = String(req.body.telefono_cliente || '').trim();
+      if (!nombre || !telefono) throw new Error('Seleccione un cliente existente o complete nombre y teléfono del nuevo cliente.');
+      if (identificacion) cliente = await Cliente.findOne({ where: { identificacion }, transaction: t });
+      if (!cliente) cliente = await Cliente.create({
+        tipoCliente: req.body.tipo_cliente === 'empresa' ? 'empresa' : 'persona', nombre,
+        identificacion: identificacion || null, telefono,
+        correo: req.body.tipo_cliente === 'empresa' ? String(req.body.correo_cliente || '').trim() || null : null,
+        activo: true
+      }, { transaction: t });
     }
 
-    const errores = [];
-
-    if (!placa?.trim()) {
-      errores.push('La placa es obligatoria.');
-    }
-
-    if (!marca?.trim()) {
-      errores.push('La marca es obligatoria.');
-    }
-
-    if (!modelo?.trim()) {
-      errores.push('El modelo es obligatorio.');
-    }
-
-    if (errores.length) {
-      return res.status(400).render('vehiculos/nuevoVehiculo', {
-        titulo: 'Registrar vehículo',
-        cliente,
-        vehiculo: req.body,
-        errores
-      });
-    }
-
-    const vehiculo = await Vehiculo.create({
-      cliente_id: clienteId,
-      placa: placa.trim().toUpperCase(),
-      marca: marca.trim(),
-      modelo: modelo.trim(),
-      anio: anio ? Number(anio) : null,
-      motor: motor?.trim() || null,
-      vin: vin?.trim() || null,
-      color: color?.trim() || null,
-      kilometraje_actual: kilometraje_actual
-        ? Number(kilometraje_actual)
-        : null,
-      notas: notas?.trim() || null
-    });
-
+    const vehiculo = await Vehiculo.create({ clienteId: cliente.id, placa, marca: 'No indicada', modelo, anio, kilometrajeActual: kilometraje }, { transaction: t });
+    await t.commit();
     return res.redirect(`/vehiculos/${vehiculo.id}`);
   } catch (error) {
-    console.error('Error al crear vehículo:', error);
-
-    return res.status(500).send(
-      'No fue posible registrar el vehículo.'
-    );
+    if (!t.finished) await t.rollback();
+    console.error(error);
+    return res.status(400).render('vehiculos/nuevoVehiculo', { titulo: 'Registrar vehículo', vehiculo: req.body, clienteSeleccionadoId: req.body.cliente_id || null, clienteSeleccionado: null, errores: [error.message] });
   }
 }
 
 async function verDetalle(req, res) {
   try {
-    const vehiculoId = Number(req.params.id);
-
-    const vehiculo = await Vehiculo.findByPk(vehiculoId, {
-      include: [
-        {
-          model: Cliente,
-          as: 'cliente'
-        },
-        {
-          model: OrdenTrabajo,
-          as: 'ordenes',
-          required: false,
-          order: [['fecha_ingreso', 'DESC']]
-        }
-      ]
-    });
-
-    if (!vehiculo) {
-      return res.status(404).send('Vehículo no encontrado.');
-    }
-
-    const ordenes = [...(vehiculo.ordenes || [])].sort(
-      (a, b) =>
-        new Date(b.fecha_ingreso) -
-        new Date(a.fecha_ingreso)
-    );
-
-    let kilometrosRecorridos = 0;
-
-    if (ordenes.length >= 2) {
-      const kilometrajeMasReciente =
-        ordenes[0].kilometraje_ingreso;
-
-      const kilometrajeMasAntiguo =
-        ordenes[ordenes.length - 1].kilometraje_ingreso;
-
-      kilometrosRecorridos =
-        kilometrajeMasReciente - kilometrajeMasAntiguo;
-    }
-
-    return res.render('vehiculos/detalleVehiculo', {
-      titulo: `${vehiculo.placa} - ${vehiculo.marca}`,
-      vehiculo,
-      ordenes,
-      kilometrosRecorridos
-    });
+    const vehiculo = await Vehiculo.findByPk(Number(req.params.id), { include: [
+      { model: Cliente, as: 'cliente' },
+      { model: OrdenTrabajo, as: 'ordenes', required: false, include: [
+        { model: EstadoOrden, as: 'estado' }, { model: OrdenTrabajoDetalle, as: 'trabajos', required: false }, { model: OrdenRepuesto, as: 'repuestos', required: false }
+      ]}
+    ]});
+    if (!vehiculo) return res.status(404).send('Vehículo no encontrado.');
+    const ordenes = [...(vehiculo.ordenes || [])].sort((a,b) => new Date(b.fechaRecepcion || 0) - new Date(a.fechaRecepcion || 0));
+    return res.render('vehiculos/detalleVehiculo', { titulo: vehiculo.placa, vehiculo, ordenes, ordenActual: ordenes[0] || null });
   } catch (error) {
-    console.error('Error al cargar vehículo:', error);
-
-    return res.status(500).send(
-      'No fue posible cargar el vehículo.'
-    );
+    console.error(error);
+    return res.status(500).send(`No fue posible cargar el vehículo: ${error.message}`);
   }
 }
 
-module.exports = {
-  mostrarFormularioNuevo,
-  crear,
-  verDetalle
-};
+async function actualizarMantenimiento(req, res) {
+  try {
+    const vehiculo = await Vehiculo.findByPk(Number(req.params.id));
+    if (!vehiculo) return res.status(404).send('Vehículo no encontrado.');
+    await vehiculo.update({
+      kilometrajeActual: Number(req.body.kilometraje_actual) || 0,
+      proximoAceiteKm: req.body.proximo_aceite_km ? Number(req.body.proximo_aceite_km) : null,
+      proximoAceiteFecha: req.body.proximo_aceite_fecha || null,
+      proximoFrenosFecha: req.body.proximo_frenos_fecha || null
+    });
+    return res.redirect(`/vehiculos/${vehiculo.id}`);
+  } catch (error) { console.error(error); return res.status(500).send('No fue posible guardar el mantenimiento.'); }
+}
+
+module.exports = { mostrarBusqueda, buscarPorPlaca, mostrarFormularioNuevo, buscarClientes, crear, verDetalle, actualizarMantenimiento };
