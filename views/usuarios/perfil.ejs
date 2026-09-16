@@ -1,15 +1,1 @@
-<div class="content">
-  <div class="profile-card">
-    <div class="profile-avatar">
-      <%= usuario.nombre.charAt(0) %><%= usuario.apellidos.charAt(0) %>
-    </div>
-
-    <div>
-      <h3><%= usuario.nombre %> <%= usuario.apellidos %></h3>
-      <p class="text-muted mb-1">Rol: <strong><%= usuario.rol %></strong></p>
-      <a href="/logout" class="btn btn-outline-danger btn-round mt-3">
-        <i class="fa fa-sign-out"></i> Cerrar sesión
-      </a>
-    </div>
-  </div>
-</div>
+<% const nombre=String(usuario?.nombre||'Usuario'); const login=String(usuario?.usuario||''); %><div class="content"><div class="container-fluid casteli-simple-page"><section class="simple-sheet"><div class="d-flex align-items-center" style="gap:18px"><div class="profile-avatar"><%= nombre.charAt(0).toUpperCase() %></div><div><span class="form-eyebrow">MI PERFIL</span><h3 class="mb-1"><%= nombre %></h3><p class="text-muted mb-1"><% if(login){ %>@<%= login %> · <% } %><%= usuario?.rol||'Sin rol' %></p><% if(!usuario?.esDesarrollo){ %><a href="/logout" class="btn btn-outline-danger mt-3">Cerrar sesión</a><% }else{ %><small class="text-muted">Modo de desarrollo</small><% } %></div></div></section></div></div>
