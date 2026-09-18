@@ -28,3 +28,12 @@ WHERE NOT EXISTS (SELECT 1 FROM estados_orden WHERE nombre='Finalizada');
 
 -- Datos de facturación del propietario.
 ALTER TABLE clientes ADD COLUMN IF NOT EXISTS codigo_trabajo VARCHAR(100);
+
+
+-- Roles operativos de Casteli.
+INSERT INTO roles (nombre, descripcion, created_at, updated_at)
+SELECT 'Administrador','Acceso completo al sistema',NOW(),NOW()
+WHERE NOT EXISTS (SELECT 1 FROM roles WHERE nombre='Administrador');
+INSERT INTO roles (nombre, descripcion, created_at, updated_at)
+SELECT 'Mecanico','Acceso operativo sin precios, cobros ni facturación',NOW(),NOW()
+WHERE NOT EXISTS (SELECT 1 FROM roles WHERE nombre='Mecanico');
