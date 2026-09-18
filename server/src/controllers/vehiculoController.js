@@ -65,33 +65,59 @@ async function crear(req, res) {
     const duplicado = await Vehiculo.findOne({ where: { placa: { [Op.iLike]: placa } }, transaction: t });
     if (duplicado) { await t.rollback(); return res.redirect(`/vehiculos/${duplicado.id}`); }
 
-    let cliente = req.body.cliente_id ? await Cliente.findByPk(Number(req.body.cliente_id), { transaction: t }) : null;
+    const clienteId = Number(req.body.cliente_id) || null;
+    let cliente = clienteId ? await Cliente.findByPk(clienteId, { transaction: t }) : null;
+
+    if (clienteId && !cliente) throw new Error('El propietario seleccionado ya no existe. Selecciónelo nuevamente.');
+
     if (!cliente) {
       const nombre = String(req.body.nombre_cliente || '').trim();
       const identificacion = String(req.body.identificacion_cliente || '').trim();
       const telefono = String(req.body.telefono_cliente || '').trim();
-      if (!nombre || !telefono) throw new Error('Seleccione un cliente existente o complete nombre y teléfono del nuevo cliente.');
-      if (identificacion) cliente = await Cliente.findOne({ where: { identificacion }, transaction: t });
-      if (!cliente) cliente = await Cliente.create({
-        tipoCliente: req.body.tipo_cliente === 'empresa' ? 'empresa' : 'persona', nombre,
-        identificacion: identificacion || null, telefono,
-        correo: req.body.tipo_cliente === 'empresa' ? String(req.body.correo_cliente || '').trim() || null : null,
-        codigoTrabajo: req.body.tipo_cliente === 'empresa' ? String(req.body.codigo_trabajo || '').trim() || null : null,
+      const tipoCliente = req.body.tipo_cliente === 'empresa' ? 'empresa' : 'persona';
+
+      if (!nombre || !telefono) throw new Error('Complete nombre y teléfono del propietario.');
+
+      // Un vehículo nuevo sin propietario seleccionado SIEMPRE crea el propietario
+      // escrito en el formulario. No se sustituye silenciosamente por otro cliente
+      // que tenga una identificación coincidente.
+      cliente = await Cliente.create({
+        tipoCliente,
+        nombre,
+        identificacion: identificacion || null,
+        telefono,
+        correo: tipoCliente === 'empresa' ? String(req.body.correo_cliente || '').trim() || null : null,
+        codigoTrabajo: tipoCliente === 'empresa' ? String(req.body.codigo_trabajo || '').trim() || null : null,
         activo: true
       }, { transaction: t });
-    }
-    if (cliente && req.body.cliente_id && cliente.tipoCliente === 'empresa') {
+    } else if (cliente.tipoCliente === 'empresa') {
       const codigoTrabajo = String(req.body.codigo_trabajo || '').trim();
-      if (codigoTrabajo && codigoTrabajo !== (cliente.codigoTrabajo || '')) await cliente.update({ codigoTrabajo }, { transaction: t });
+      if (codigoTrabajo && codigoTrabajo !== (cliente.codigoTrabajo || '')) {
+        await cliente.update({ codigoTrabajo }, { transaction: t });
+      }
     }
 
-    const vehiculo = await Vehiculo.create({ clienteId: cliente.id, placa, marca: 'No indicada', modelo, anio, kilometrajeActual: kilometraje }, { transaction: t });
+    const vehiculo = await Vehiculo.create({
+      clienteId: cliente.id,
+      placa,
+      marca: 'No indicada',
+      modelo,
+      anio,
+      kilometrajeActual: kilometraje
+    }, { transaction: t });
+
     await t.commit();
     return res.redirect(`/vehiculos/${vehiculo.id}`);
   } catch (error) {
     if (!t.finished) await t.rollback();
     console.error(error);
-    return res.status(400).render('vehiculos/nuevoVehiculo', { titulo: 'Registrar vehículo', vehiculo: req.body, clienteSeleccionadoId: req.body.cliente_id || null, clienteSeleccionado: null, errores: [error.message] });
+    return res.status(400).render('vehiculos/nuevoVehiculo', {
+      titulo: 'Registrar vehículo',
+      vehiculo: req.body,
+      clienteSeleccionadoId: req.body.cliente_id || null,
+      clienteSeleccionado: null,
+      errores: [error.message]
+    });
   }
 }
 
