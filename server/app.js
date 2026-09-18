@@ -126,6 +126,7 @@ const proveedorRoutes = require('./src/routes/proveedorRoutes');
 const clienteRoutes = require('./src/routes/clienteRoutes');
 const vehiculoRoutes = require('./src/routes/vehiculoRoutes');
 const ordenRoutes = require('./src/routes/ordenRoutes');
+const facturacionRoutes = require('./src/routes/facturacionRoutes');
 
 app.use('/', authRoutes);
 
@@ -168,6 +169,7 @@ app.use(
 app.use('/clientes', clienteRoutes);
 app.use('/vehiculos', vehiculoRoutes);
 app.use('/ordenes', ordenRoutes);
+app.use('/facturacion-quincenal', facturacionRoutes);
 
 // =============================
 // SOCKET.IO
