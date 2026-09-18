@@ -5,17 +5,30 @@ const { Cliente, Vehiculo, OrdenTrabajo, EstadoOrden, OrdenTrabajoDetalle, Orden
 
 const normalizarPlaca = placa => String(placa || '').trim().toUpperCase().replace(/\s+/g, '');
 
-function mostrarBusqueda(req, res) {
-  return res.render('vehiculos/buscarVehiculo', { titulo: 'Buscar vehículo', placa: '', error: null, noEncontrado: false });
+async function mostrarBusqueda(req, res) {
+  try {
+    const vehiculos = await Vehiculo.findAll({
+      include: [{ model: Cliente, as: 'cliente', required: false }],
+      order: [['createdAt', 'DESC'], ['id', 'DESC']]
+    });
+    return res.render('vehiculos/buscarVehiculo', { titulo: 'Buscar vehículo', placa: '', error: null, noEncontrado: false, vehiculos });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send('No fue posible cargar los vehículos.');
+  }
 }
 
 async function buscarPorPlaca(req, res) {
   try {
     const placa = normalizarPlaca(req.body.placa);
-    if (!placa) return res.status(400).render('vehiculos/buscarVehiculo', { titulo: 'Buscar vehículo', placa, error: 'Ingrese una placa.', noEncontrado: false });
+    if (!placa) return res.redirect('/vehiculos/buscar');
     const vehiculo = await Vehiculo.findOne({ where: { placa: { [Op.iLike]: placa } } });
     if (vehiculo) return res.redirect(`/vehiculos/${vehiculo.id}`);
-    return res.render('vehiculos/buscarVehiculo', { titulo: 'Buscar vehículo', placa, error: null, noEncontrado: true });
+    const vehiculos = await Vehiculo.findAll({
+      include: [{ model: Cliente, as: 'cliente', required: false }],
+      order: [['createdAt', 'DESC'], ['id', 'DESC']]
+    });
+    return res.render('vehiculos/buscarVehiculo', { titulo: 'Buscar vehículo', placa, error: null, noEncontrado: true, vehiculos });
   } catch (error) {
     console.error(error);
     return res.status(500).send('No fue posible buscar el vehículo.');
