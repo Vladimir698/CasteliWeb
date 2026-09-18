@@ -3,6 +3,7 @@ const session = require('express-session');
 const path = require('path');
 const http = require('http');
 const expressLayouts = require('express-ejs-layouts');
+const helmet = require('helmet');
 const { Server } = require('socket.io');
 
 require('dotenv').config();
@@ -36,8 +37,10 @@ app.set('layout extractStyles', true);
 // MIDDLEWARES
 // =============================
 
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.disable('x-powered-by');
+app.use(helmet({ contentSecurityPolicy: false }));
+app.use(express.urlencoded({ extended: true, limit: '100kb' }));
+app.use(express.json({ limit: '100kb' }));
 
 app.set('trust proxy', 1);
 
@@ -126,26 +129,12 @@ const proveedorRoutes = require('./src/routes/proveedorRoutes');
 const clienteRoutes = require('./src/routes/clienteRoutes');
 const vehiculoRoutes = require('./src/routes/vehiculoRoutes');
 const ordenRoutes = require('./src/routes/ordenRoutes');
+const facturacionRoutes = require('./src/routes/facturacionRoutes');
 
 app.use('/', authRoutes);
 
-app.get('/', (req, res) => {
-
-  req.session.usuario = {
-  id: 1,
-  nombre: 'Administrador',
-  apellidos: 'Casteli',
-  usuario: 'admin',
-  correo: 'admin@casteli.com',
-  rol: 'administrador'
-};
-
-  return res.redirect('/home');
-});
-
-app.get('/home', (req, res) => {
-  res.render('index');
-});
+app.get('/', (req,res)=>res.redirect(req.session?.usuario?'/home':'/login'));
+app.get('/home', requiereLogin, (req,res)=>res.render('index'));
 
 
 app.use(
@@ -168,6 +157,7 @@ app.use(
 app.use('/clientes', clienteRoutes);
 app.use('/vehiculos', vehiculoRoutes);
 app.use('/ordenes', ordenRoutes);
+app.use('/facturacion-quincenal', facturacionRoutes);
 
 // =============================
 // SOCKET.IO

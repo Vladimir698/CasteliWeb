@@ -1,10 +1,9 @@
-const express = require('express');
-const router = express.Router();
-const c = require('../controllers/facturacionController');
-
-router.get('/', c.index);
-router.post('/cheques', c.crearCheque);
-router.post('/facturas', c.crearFactura);
-router.get('/reporte/pdf', c.reportePdf);
-
-module.exports = router;
+'use strict';
+const express=require('express');
+const c=require('../controllers/facturacionQuincenalController');
+const {requiereLogin,soloAdmin}=require('../middleware/authMiddleware');
+const router=express.Router();
+router.use(requiereLogin,soloAdmin);
+router.get('/',c.listar);
+router.post('/:id/gti',c.enviarGTI);
+module.exports=router;

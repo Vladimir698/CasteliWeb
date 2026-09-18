@@ -1,44 +1,14 @@
 'use strict';
-
-const express = require('express');
-const vehiculoController = require(
-  '../controllers/vehiculoController'
-);
-
-const {
-  requiereLogin,
-  permitirRoles
-} = require('../middleware/authMiddleware');
-
-const router = express.Router();
-
+const express=require('express');
+const c=require('../controllers/vehiculoController');
+const {requiereLogin}=require('../middleware/authMiddleware');
+const router=express.Router();
 router.use(requiereLogin);
-
-router.get(
-  '/nuevo/:clienteId',
-  permitirRoles(
-    'administrador',
-    'mecanico_administrativo'
-  ),
-  vehiculoController.mostrarFormularioNuevo
-);
-
-router.post(
-  '/cliente/:clienteId',
-  permitirRoles(
-    'administrador',
-    'mecanico_administrativo'
-  ),
-  vehiculoController.crear
-);
-
-router.get(
-  '/:id',
-  permitirRoles(
-    'administrador',
-    'mecanico_administrativo'
-  ),
-  vehiculoController.verDetalle
-);
-
-module.exports = router;
+router.get('/buscar',c.mostrarBusqueda);
+router.post('/buscar',c.buscarPorPlaca);
+router.get('/buscar-clientes',c.buscarClientes);
+router.get('/nuevo',c.mostrarFormularioNuevo);
+router.post('/',c.crear);
+router.post('/:id/mantenimiento',c.actualizarMantenimiento);
+router.get('/:id',c.verDetalle);
+module.exports=router;
