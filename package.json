@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server/app.js",
     "dev": "nodemon server/app.js",
-    "test": "echo \"No tests configured\""
+    "test": "echo \"No tests configured\"",
+    "demo": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/demo.ps1"
   },
   "engines": {
     "node": ">=20 <23"
