@@ -18,7 +18,11 @@ module.exports = (sequelize, DataTypes) => {
     observaciones: { type: DataTypes.TEXT, allowNull: true, field: 'observaciones' },
     manoObra: { type: DataTypes.DECIMAL(12,2), allowNull: false, field: 'mano_obra', defaultValue: 0 },
     otros: { type: DataTypes.DECIMAL(12,2), allowNull: false, field: 'otros', defaultValue: 0 },
-    descuento: { type: DataTypes.DECIMAL(12,2), allowNull: false, field: 'descuento', defaultValue: 0 }
+    descuento: { type: DataTypes.DECIMAL(12,2), allowNull: false, field: 'descuento', defaultValue: 0 },
+    responsableTrabajo: { type: DataTypes.STRING(100), allowNull: true, field: 'responsable_trabajo' },
+    finalizadoPor: { type: DataTypes.STRING(150), allowNull: true, field: 'finalizado_por' },
+    gtiEstado: { type: DataTypes.STRING(30), allowNull: true, field: 'gti_estado' },
+    gtiReferencia: { type: DataTypes.STRING(120), allowNull: true, field: 'gti_referencia' }
   }, {
     tableName: 'ordenes_trabajo',
     freezeTableName: true,
