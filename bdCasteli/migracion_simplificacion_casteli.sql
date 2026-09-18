@@ -24,3 +24,7 @@ ALTER TABLE ordenes_trabajo ADD COLUMN IF NOT EXISTS gti_referencia VARCHAR(120)
 INSERT INTO estados_orden (nombre)
 SELECT 'Finalizada'
 WHERE NOT EXISTS (SELECT 1 FROM estados_orden WHERE nombre='Finalizada');
+
+
+-- Datos de facturación del propietario.
+ALTER TABLE clientes ADD COLUMN IF NOT EXISTS codigo_trabajo VARCHAR(100);
