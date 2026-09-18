@@ -87,7 +87,9 @@ async function verDetalle(req, res) {
     ]});
     if (!vehiculo) return res.status(404).send('Vehículo no encontrado.');
     const ordenes = [...(vehiculo.ordenes || [])].sort((a,b) => new Date(b.fechaRecepcion || 0) - new Date(a.fechaRecepcion || 0));
-    return res.render('vehiculos/detalleVehiculo', { titulo: vehiculo.placa, vehiculo, ordenes, ordenActual: ordenes[0] || null });
+    const estadosCerrados = new Set(['Finalizada','Entregada','Cancelada']);
+    const ordenActual = ordenes.find(o => !estadosCerrados.has(o.estado?.nombre)) || null;
+    return res.render('vehiculos/detalleVehiculo', { titulo: vehiculo.placa, vehiculo, ordenes, ordenActual });
   } catch (error) {
     console.error(error);
     return res.status(500).send(`No fue posible cargar el vehículo: ${error.message}`);
