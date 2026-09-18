@@ -50,7 +50,7 @@ async function buscarClientes(req, res) {
       { nombre: { [Op.iLike]: `%${q}%` } }, { identificacion: { [Op.iLike]: `%${q}%` } }, { telefono: { [Op.iLike]: `%${q}%` } }
     ]}, limit: 10, order: [['nombre', 'ASC']]
   });
-  return res.json(clientes.map(c => ({ id: c.id, nombre: c.nombre, identificacion: c.identificacion, telefono: c.telefono })));
+  return res.json(clientes.map(c => ({ id: c.id, nombre: c.nombre, identificacion: c.identificacion, telefono: c.telefono, tipoCliente: c.tipoCliente, correo: c.correo, codigoTrabajo: c.codigoTrabajo })));
 }
 
 async function crear(req, res) {
@@ -76,8 +76,13 @@ async function crear(req, res) {
         tipoCliente: req.body.tipo_cliente === 'empresa' ? 'empresa' : 'persona', nombre,
         identificacion: identificacion || null, telefono,
         correo: req.body.tipo_cliente === 'empresa' ? String(req.body.correo_cliente || '').trim() || null : null,
+        codigoTrabajo: req.body.tipo_cliente === 'empresa' ? String(req.body.codigo_trabajo || '').trim() || null : null,
         activo: true
       }, { transaction: t });
+    }
+    if (cliente && req.body.cliente_id && cliente.tipoCliente === 'empresa') {
+      const codigoTrabajo = String(req.body.codigo_trabajo || '').trim();
+      if (codigoTrabajo && codigoTrabajo !== (cliente.codigoTrabajo || '')) await cliente.update({ codigoTrabajo }, { transaction: t });
     }
 
     const vehiculo = await Vehiculo.create({ clienteId: cliente.id, placa, marca: 'No indicada', modelo, anio, kilometrajeActual: kilometraje }, { transaction: t });
