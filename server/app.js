@@ -79,10 +79,6 @@ app.use((req, res, next) => {
   res.locals.rutaActual = req.path;
 
   res.locals.esAdmin = rol === 'administrador';
-
-  res.locals.esMecanicoAdministrativo =
-    rol === 'mecanico_administrativo';
-
   res.locals.esMecanico = rol === 'mecanico';
 
   next();
@@ -115,7 +111,6 @@ app.get('/health', async (req, res) => {
 
 const {
   requiereLogin,
-  permitirRoles,
   soloAdmin
 } = require('./src/middleware/authMiddleware');
 
@@ -125,7 +120,6 @@ const {
 
 const authRoutes = require('./src/routes/authRoutes');
 const usuariosRoutes = require('./src/routes/usuariosRoutes');
-const proveedorRoutes = require('./src/routes/proveedorRoutes');
 const clienteRoutes = require('./src/routes/clienteRoutes');
 const vehiculoRoutes = require('./src/routes/vehiculoRoutes');
 const ordenRoutes = require('./src/routes/ordenRoutes');
@@ -135,17 +129,6 @@ app.use('/', authRoutes);
 
 app.get('/', (req,res)=>res.redirect(req.session?.usuario?'/home':'/login'));
 app.get('/home', requiereLogin, (req,res)=>res.render('index'));
-
-
-app.use(
-  '/proveedores',
-  requiereLogin,
-  permitirRoles(
-    'Administrador',
-    'Mecanico_Administrativo'
-  ),
-  proveedorRoutes
-);
 
 app.use(
   '/usuarios',
