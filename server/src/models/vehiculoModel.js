@@ -10,6 +10,9 @@ module.exports = (sequelize, DataTypes) => {
     anio: { type: DataTypes.INTEGER, allowNull: true, field: 'anio' },
     kilometrajeActual: { type: DataTypes.INTEGER, allowNull: false, field: 'kilometraje_actual', defaultValue: 0 },
     proximoAceiteKm: { type: DataTypes.INTEGER, allowNull: true, field: 'proximo_aceite_km' },
+    intervaloAceiteKm: { type: DataTypes.INTEGER, allowNull: true, field: 'intervalo_aceite_km' },
+    intervaloAceiteMeses: { type: DataTypes.INTEGER, allowNull: true, field: 'intervalo_aceite_meses' },
+    intervaloFrenosMeses: { type: DataTypes.INTEGER, allowNull: true, field: 'intervalo_frenos_meses' },
     proximoAceiteFecha: { type: DataTypes.DATEONLY, allowNull: true, field: 'proximo_aceite_fecha' },
     proximoFrenosFecha: { type: DataTypes.DATEONLY, allowNull: true, field: 'proximo_frenos_fecha' },
     activo: { type: DataTypes.BOOLEAN, allowNull: false, field: 'activo', defaultValue: true }
