@@ -42,3 +42,10 @@ WHERE NOT EXISTS (SELECT 1 FROM roles WHERE nombre='Mecanico');
 ALTER TABLE vehiculos ADD COLUMN IF NOT EXISTS intervalo_aceite_km INT;
 ALTER TABLE vehiculos ADD COLUMN IF NOT EXISTS intervalo_aceite_meses INT;
 ALTER TABLE vehiculos ADD COLUMN IF NOT EXISTS intervalo_frenos_meses INT;
+
+-- Fechas/km reales del último servicio y revisión general.
+ALTER TABLE vehiculos ADD COLUMN IF NOT EXISTS ultimo_aceite_fecha DATE;
+ALTER TABLE vehiculos ADD COLUMN IF NOT EXISTS ultimo_frenos_fecha DATE;
+ALTER TABLE vehiculos ADD COLUMN IF NOT EXISTS intervalo_revision_km INT;
+ALTER TABLE vehiculos ADD COLUMN IF NOT EXISTS ultima_revision_km INT;
+ALTER TABLE vehiculos ADD COLUMN IF NOT EXISTS proxima_revision_km INT;
