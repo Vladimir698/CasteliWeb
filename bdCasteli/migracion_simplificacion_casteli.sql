@@ -37,3 +37,8 @@ WHERE NOT EXISTS (SELECT 1 FROM roles WHERE nombre='Administrador');
 INSERT INTO roles (nombre, descripcion, created_at, updated_at)
 SELECT 'Mecanico','Acceso operativo sin precios, cobros ni facturación',NOW(),NOW()
 WHERE NOT EXISTS (SELECT 1 FROM roles WHERE nombre='Mecanico');
+
+-- Intervalos personalizados para cálculo automático de mantenimiento.
+ALTER TABLE vehiculos ADD COLUMN IF NOT EXISTS intervalo_aceite_km INT;
+ALTER TABLE vehiculos ADD COLUMN IF NOT EXISTS intervalo_aceite_meses INT;
+ALTER TABLE vehiculos ADD COLUMN IF NOT EXISTS intervalo_frenos_meses INT;
