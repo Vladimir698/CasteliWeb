@@ -2,6 +2,7 @@ const express = require('express');
 const session = require('express-session');
 const pgSession = require('connect-pg-simple')(session);
 const compression = require('compression');
+const crypto = require('crypto');
 const path = require('path');
 const http = require('http');
 const expressLayouts = require('express-ejs-layouts');
@@ -76,9 +77,35 @@ app.use(
   })
 );
 
-// La cookie SameSite=Lax protege la sesión frente a envíos cross-site comunes.
-// La protección CSRF con token se incorporará de forma explícita antes del despliegue
-// sin depender de cabeceras Origin/Host, que pueden variar entre navegador y proxy.
+// Token CSRF por sesión. Protege todos los cambios de estado sin depender
+// de Origin/Host, por lo que funciona igual en localhost y detrás del proxy de Railway.
+app.use((req, res, next) => {
+  if (!req.session.csrfToken) {
+    req.session.csrfToken = crypto.randomBytes(32).toString('hex');
+  }
+
+  res.locals.csrfToken = req.session.csrfToken;
+
+  if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
+    return next();
+  }
+
+  const recibido = String(req.body?._csrf || req.get('x-csrf-token') || '');
+  const esperado = String(req.session.csrfToken || '');
+
+  if (!recibido || !esperado) {
+    return res.status(403).send('Solicitud no válida. Recargue la página e inténtelo nuevamente.');
+  }
+
+  const a = Buffer.from(recibido);
+  const b = Buffer.from(esperado);
+
+  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
+    return res.status(403).send('Solicitud no válida. Recargue la página e inténtelo nuevamente.');
+  }
+
+  return next();
+});
 
 app.use(express.static(path.join(__dirname, '..', 'public'), {
   maxAge: isProduction ? '1d' : 0,
