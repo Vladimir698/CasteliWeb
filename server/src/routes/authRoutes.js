@@ -37,7 +37,7 @@ setInterval(() => {
 
 router.get('/login', c.formLogin);
 router.post('/login', limitarLogin, c.login);
-router.get('/logout', c.logout);
+router.post('/logout', requiereLogin, c.logout);
 router.get('/perfil', requiereLogin, c.perfil);
 
 module.exports = router;
