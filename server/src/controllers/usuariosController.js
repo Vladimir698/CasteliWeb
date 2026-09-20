@@ -32,12 +32,14 @@ exports.actualizar = async(req,res)=>{
   try{
     const u=await db.Usuario.findByPk(Number(req.params.id)); if(!u)return res.status(404).send('Usuario no encontrado');
     const data={nombre:String(req.body.nombre||'').trim(),usuario:String(req.body.usuario||'').trim(),email:String(req.body.email||'').trim()||null,rolId:Number(req.body.rol_id)||null};
+    if(!data.nombre||!data.usuario) return res.status(400).send('Nombre y usuario son obligatorios.');
+    if(req.body.password && String(req.body.password).length < 8) return res.status(400).send('La nueva contraseña debe tener al menos 8 caracteres.');
     if(req.body.password) data.passwordHash=await bcrypt.hash(String(req.body.password),12);
     await u.update(data); return res.redirect('/usuarios?msg=actualizado');
   }catch(e){console.error(e);return res.status(500).send('Error actualizando usuario');}
 };
 
 exports.eliminar=async(req,res)=>{
-  try{const u=await db.Usuario.findByPk(Number(req.params.id));if(!u)return res.status(404).send('Usuario no encontrado');await u.update({activo:false});return res.redirect('/usuarios?msg=eliminado');}
+  try{const u=await db.Usuario.findByPk(Number(req.params.id));if(!u)return res.status(404).send('Usuario no encontrado');if(Number(req.session?.usuario?.id)===Number(u.id))return res.status(400).send('No puede desactivar su propio usuario mientras tiene la sesión iniciada.');await u.update({activo:false});return res.redirect('/usuarios?msg=eliminado');}
   catch(e){console.error(e);return res.status(500).send('Error desactivando usuario');}
 };
