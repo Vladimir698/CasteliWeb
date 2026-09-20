@@ -89,8 +89,20 @@ app.use((req, res, next) => {
   const origin = req.get('origin');
   if (origin) {
     try {
-      const originHost = new URL(origin).host;
-      if (originHost !== req.get('host')) {
+      const originUrl = new URL(origin);
+      const requestHost = req.get('host');
+
+      // En desarrollo localhost y 127.0.0.1 son equivalentes.
+      const localHosts = new Set(['localhost', '127.0.0.1', '::1']);
+      const requestHostname = requestHost ? requestHost.split(':')[0] : '';
+
+      const mismoHost = originUrl.host === requestHost;
+      const ambosLocales =
+        !isProduction &&
+        localHosts.has(originUrl.hostname) &&
+        localHosts.has(requestHostname);
+
+      if (!mismoHost && !ambosLocales) {
         return res.status(403).send('Solicitud no permitida.');
       }
     } catch {
@@ -173,5 +185,5 @@ app.use((error, req, res, next) => {
 const PORT = process.env.PORT || 3000;
 
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Servidor corriendo en puerto ${PORT}`);
+  console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
