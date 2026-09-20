@@ -13,6 +13,11 @@ module.exports = (sequelize, DataTypes) => {
     intervaloAceiteKm: { type: DataTypes.INTEGER, allowNull: true, field: 'intervalo_aceite_km' },
     intervaloAceiteMeses: { type: DataTypes.INTEGER, allowNull: true, field: 'intervalo_aceite_meses' },
     intervaloFrenosMeses: { type: DataTypes.INTEGER, allowNull: true, field: 'intervalo_frenos_meses' },
+    ultimoAceiteFecha: { type: DataTypes.DATEONLY, allowNull: true, field: 'ultimo_aceite_fecha' },
+    ultimoFrenosFecha: { type: DataTypes.DATEONLY, allowNull: true, field: 'ultimo_frenos_fecha' },
+    intervaloRevisionKm: { type: DataTypes.INTEGER, allowNull: true, field: 'intervalo_revision_km' },
+    ultimaRevisionKm: { type: DataTypes.INTEGER, allowNull: true, field: 'ultima_revision_km' },
+    proximaRevisionKm: { type: DataTypes.INTEGER, allowNull: true, field: 'proxima_revision_km' },
     proximoAceiteFecha: { type: DataTypes.DATEONLY, allowNull: true, field: 'proximo_aceite_fecha' },
     proximoFrenosFecha: { type: DataTypes.DATEONLY, allowNull: true, field: 'proximo_frenos_fecha' },
     activo: { type: DataTypes.BOOLEAN, allowNull: false, field: 'activo', defaultValue: true }
