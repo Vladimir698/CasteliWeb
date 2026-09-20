@@ -144,11 +144,24 @@ async function actualizarMantenimiento(req, res) {
   try {
     const vehiculo = await Vehiculo.findByPk(Number(req.params.id));
     if (!vehiculo) return res.status(404).send('Vehículo no encontrado.');
+    const kilometrajeActual = Math.max(0, Number(req.body.kilometraje_actual) || 0);
+    const intervaloAceiteKm = req.body.intervalo_aceite_km ? Math.max(0, Number(req.body.intervalo_aceite_km)) : null;
+    const intervaloAceiteMeses = req.body.intervalo_aceite_meses ? Math.max(0, Number(req.body.intervalo_aceite_meses)) : null;
+    const intervaloFrenosMeses = req.body.intervalo_frenos_meses ? Math.max(0, Number(req.body.intervalo_frenos_meses)) : null;
+    const sumarMeses = (fechaBase, meses) => {
+      if (!meses) return null;
+      const base = fechaBase ? new Date(fechaBase + 'T12:00:00') : new Date();
+      base.setMonth(base.getMonth() + meses);
+      return base.toISOString().slice(0, 10);
+    };
     await vehiculo.update({
-      kilometrajeActual: Number(req.body.kilometraje_actual) || 0,
-      proximoAceiteKm: req.body.proximo_aceite_km ? Number(req.body.proximo_aceite_km) : null,
-      proximoAceiteFecha: req.body.proximo_aceite_fecha || null,
-      proximoFrenosFecha: req.body.proximo_frenos_fecha || null
+      kilometrajeActual,
+      intervaloAceiteKm,
+      intervaloAceiteMeses,
+      intervaloFrenosMeses,
+      proximoAceiteKm: intervaloAceiteKm ? kilometrajeActual + intervaloAceiteKm : (req.body.proximo_aceite_km ? Number(req.body.proximo_aceite_km) : null),
+      proximoAceiteFecha: intervaloAceiteMeses ? sumarMeses(req.body.fecha_base_aceite, intervaloAceiteMeses) : (req.body.proximo_aceite_fecha || null),
+      proximoFrenosFecha: intervaloFrenosMeses ? sumarMeses(req.body.fecha_base_frenos, intervaloFrenosMeses) : (req.body.proximo_frenos_fecha || null)
     });
     return res.redirect(`/vehiculos/${vehiculo.id}`);
   } catch (error) { console.error(error); return res.status(500).send('No fue posible guardar el mantenimiento.'); }
