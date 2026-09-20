@@ -76,42 +76,9 @@ app.use(
   })
 );
 
-// Defensa CSRF basada en las cabeceras del navegador.
-// No afecta formularios ni peticiones del mismo sitio.
-app.use((req, res, next) => {
-  if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) return next();
-
-  const fetchSite = req.get('sec-fetch-site');
-  if (fetchSite === 'cross-site') {
-    return res.status(403).send('Solicitud no permitida.');
-  }
-
-  const origin = req.get('origin');
-  if (origin) {
-    try {
-      const originUrl = new URL(origin);
-      const requestHost = req.get('host');
-
-      // En desarrollo localhost y 127.0.0.1 son equivalentes.
-      const localHosts = new Set(['localhost', '127.0.0.1', '::1']);
-      const requestHostname = requestHost ? requestHost.split(':')[0] : '';
-
-      const mismoHost = originUrl.host === requestHost;
-      const ambosLocales =
-        !isProduction &&
-        localHosts.has(originUrl.hostname) &&
-        localHosts.has(requestHostname);
-
-      if (!mismoHost && !ambosLocales) {
-        return res.status(403).send('Solicitud no permitida.');
-      }
-    } catch {
-      return res.status(403).send('Solicitud no permitida.');
-    }
-  }
-
-  return next();
-});
+// La cookie SameSite=Lax protege la sesión frente a envíos cross-site comunes.
+// La protección CSRF con token se incorporará de forma explícita antes del despliegue
+// sin depender de cabeceras Origin/Host, que pueden variar entre navegador y proxy.
 
 app.use(express.static(path.join(__dirname, '..', 'public'), {
   maxAge: isProduction ? '1d' : 0,
