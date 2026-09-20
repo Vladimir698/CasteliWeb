@@ -35,8 +35,11 @@ app.use(compression());
 app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 app.use(express.json({ limit: '100kb' }));
 
-if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
-  throw new Error('SESSION_SECRET debe estar configurada y tener al menos 32 caracteres');
+if (!process.env.SESSION_SECRET) {
+  throw new Error('SESSION_SECRET debe estar configurada');
+}
+if (isProduction && process.env.SESSION_SECRET.length < 32) {
+  throw new Error('En producción SESSION_SECRET debe tener al menos 32 caracteres');
 }
 
 const sessionStoreOptions = {
