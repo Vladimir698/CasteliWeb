@@ -54,3 +54,10 @@ ALTER TABLE vehiculos ADD COLUMN IF NOT EXISTS proxima_revision_km INT;
 ALTER TABLE ordenes_trabajo ADD COLUMN IF NOT EXISTS tipo_servicio VARCHAR(30) NOT NULL DEFAULT 'reparacion';
 ALTER TABLE ordenes_trabajo ADD COLUMN IF NOT EXISTS tipo_aceite VARCHAR(80);
 ALTER TABLE ordenes_trabajo ADD COLUMN IF NOT EXISTS cuartos_aceite NUMERIC(6,2);
+
+-- Responsable real del trabajo y destino contable del servicio.
+ALTER TABLE ordenes_trabajo ADD COLUMN IF NOT EXISTS responsable_usuario_id INT REFERENCES usuarios(id);
+ALTER TABLE ordenes_trabajo ADD COLUMN IF NOT EXISTS destino_servicio VARCHAR(30);
+-- Corrige órdenes históricas que ya quedaron identificadas como Emerson.
+UPDATE ordenes_trabajo SET destino_servicio='Emerson' WHERE LOWER(TRIM(COALESCE(responsable_trabajo,'')))='emerson' AND destino_servicio IS NULL;
+UPDATE ordenes_trabajo SET destino_servicio='Taller' WHERE destino_servicio IS NULL AND estado_id IN (SELECT id FROM estados_orden WHERE nombre='Finalizada');
