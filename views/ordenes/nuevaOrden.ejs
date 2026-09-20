@@ -63,185 +63,20 @@
         </div>
       <% } %>
 
-      <form
-        action="/ordenes/vehiculo/<%= vehiculo.id %>"
-        method="POST"
-        autocomplete="off"
-      >
+      <form action="/ordenes/vehiculo/<%= vehiculo.id %>" method="POST" autocomplete="off" id="new-order-form">
+        <div class="service-choice"><span class="form-eyebrow">¿QUÉ SERVICIO INGRESA?</span><div class="service-choice-grid">
+          <label class="service-choice-card selected"><input type="radio" name="tipo_servicio" value="reparacion" checked><i class="fa fa-wrench"></i><strong>Reparación / revisión</strong><small>Diagnóstico, reparación o varios trabajos.</small></label>
+          <label class="service-choice-card"><input type="radio" name="tipo_servicio" value="aceite"><i class="fa fa-tint"></i><strong>Cambio de aceite rápido</strong><small>Aceite de motor y filtro, sin llenar una orden extensa.</small></label>
+        </div></div>
         <div class="responsive-form-grid">
-
-          <div class="form-group">
-            <label for="kilometraje_ingreso">
-              Kilometraje de ingreso
-              <span class="text-danger">*</span>
-            </label>
-
-            <input
-              id="kilometraje_ingreso"
-              name="kilometraje_ingreso"
-              type="number"
-              class="form-control"
-              min="0"
-              step="1"
-              inputmode="numeric"
-              value="<%=
-                orden?.kilometraje_ingreso ??
-                orden?.kilometrajeIngreso ??
-                vehiculo?.kilometrajeActual ??
-                vehiculo?.kilometraje_actual ??
-                ''
-              %>"
-              placeholder="Ejemplo: 125000"
-              required
-              autofocus
-            >
-
-            <small class="form-text text-muted">
-              Kilometraje registrado anteriormente:
-              <%=
-                vehiculo?.kilometrajeActual ??
-                vehiculo?.kilometraje_actual ??
-                0
-              %> km
-            </small>
-          </div>
-
-          <div class="form-group">
-            <label for="nivel_combustible">
-              Nivel de combustible
-            </label>
-
-            <select
-              id="nivel_combustible"
-              name="nivel_combustible"
-              class="form-control"
-            >
-              <option value="">Seleccione</option>
-
-              <% [
-                'Vacío',
-                '1/4',
-                '1/2',
-                '3/4',
-                'Lleno'
-              ].forEach(opcion => { %>
-                <option
-                  value="<%= opcion %>"
-                  <%=
-                    (
-                      orden?.nivel_combustible ||
-                      orden?.nivelCombustible
-                    ) === opcion
-                      ? 'selected'
-                      : ''
-                  %>
-                >
-                  <%= opcion %>
-                </option>
-              <% }) %>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="prioridad">
-              Prioridad
-            </label>
-
-            <select
-              id="prioridad"
-              name="prioridad"
-              class="form-control"
-            >
-              <% [
-                'Baja',
-                'Normal',
-                'Alta',
-                'Urgente'
-              ].forEach(opcion => { %>
-                <option
-                  value="<%= opcion %>"
-                  <%=
-                    (orden?.prioridad || 'Normal') === opcion
-                      ? 'selected'
-                      : ''
-                  %>
-                >
-                  <%= opcion %>
-                </option>
-              <% }) %>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="fecha_recepcion_visual">
-              Fecha de recepción
-            </label>
-
-            <input
-              id="fecha_recepcion_visual"
-              type="text"
-              class="form-control"
-              value="<%= new Date().toLocaleString('es-CR') %>"
-              readonly
-            >
-          </div>
-
-          <div class="form-group form-group-full">
-            <label for="problema_reportado">
-              Problema reportado por el cliente
-              <span class="text-danger">*</span>
-            </label>
-
-            <textarea
-              id="problema_reportado"
-              name="problema_reportado"
-              class="form-control"
-              rows="5"
-              placeholder="Describa con las palabras del cliente el problema o servicio solicitado"
-              required
-            ><%=
-              orden?.problema_reportado ||
-              orden?.problemaReportado ||
-              ''
-            %></textarea>
-          </div>
-
-          <div class="form-group form-group-full">
-            <label for="observaciones">
-              Observaciones de recepción
-            </label>
-
-            <textarea
-              id="observaciones"
-              name="observaciones"
-              class="form-control"
-              rows="4"
-              placeholder="Golpes visibles, accesorios entregados, testigos encendidos u otras condiciones"
-            ><%= orden?.observaciones || '' %></textarea>
-          </div>
-
+          <div class="form-group"><label for="kilometraje_ingreso">Kilometraje de ingreso <span class="text-danger">*</span></label><input id="kilometraje_ingreso" name="kilometraje_ingreso" type="number" class="form-control" min="0" step="1" inputmode="numeric" value="<%= vehiculo?.kilometrajeActual ?? '' %>" required autofocus><small class="form-text text-muted">Anterior: <%= vehiculo?.kilometrajeActual ?? 0 %> km</small></div>
+          <div id="normal-service-fields" class="service-fields-full"><div class="responsive-form-grid"><div class="form-group form-group-full"><label for="problema_reportado">Servicio o problema reportado <span class="text-danger">*</span></label><textarea id="problema_reportado" name="problema_reportado" class="form-control" rows="4" placeholder="Describa el servicio solicitado" required></textarea></div><div class="form-group form-group-full"><label for="observaciones">Observaciones de recepción</label><textarea id="observaciones" name="observaciones" class="form-control" rows="3"></textarea></div></div></div>
+          <div id="oil-service-fields" class="service-fields-full oil-quick-fields" hidden><div class="oil-quick-title"><i class="fa fa-bolt"></i><div><strong>Venta rápida de cambio de aceite</strong><small>Seleccione y continúe. Los precios se completarán en la ficha.</small></div></div><div class="oil-choice-grid"><label class="oil-option"><input type="radio" name="tipo_aceite" value="Aceite Sintético para Motor"><span><strong>Aceite Sintético</strong><small>para motor</small></span></label><label class="oil-option"><input type="radio" name="tipo_aceite" value="Aceite Semisintético para Motor"><span><strong>Aceite Semisintético</strong><small>para motor</small></span></label></div><div class="oil-quick-grid"><div class="form-group"><label>¿Cuántos cuartos?</label><input id="cuartos_aceite" name="cuartos_aceite" type="number" min="0.25" step="0.25" class="form-control" placeholder="Ej. 5"></div><label class="filter-toggle"><input type="checkbox" name="incluir_filtro" value="1" checked><span class="mechanic-checkbox checked">✓</span><div><strong>Incluir filtro de aceite</strong><small>Se agregará automáticamente al cobro.</small></div></label></div><div class="form-group"><label>Observación opcional</label><textarea name="observaciones_aceite" class="form-control" rows="2" placeholder="Alguna observación de este servicio"></textarea></div></div>
         </div>
-
-        <div class="responsive-form-actions">
-          <a
-            href="/vehiculos/<%= vehiculo.id %>"
-            class="btn btn-outline-secondary"
-          >
-            <i class="fa fa-times" aria-hidden="true"></i>
-            Cancelar
-          </a>
-
-          <button
-            type="submit"
-            class="btn btn-danger"
-          >
-            <i class="fa fa-wrench" aria-hidden="true"></i>
-            Crear orden de trabajo
-          </button>
-        </div>
+        <div class="responsive-form-actions"><a href="/vehiculos/<%= vehiculo.id %>" class="btn btn-outline-secondary"><i class="fa fa-times"></i> Cancelar</a><button type="submit" class="btn btn-danger" id="create-order-btn"><i class="fa fa-wrench"></i> Crear reparación</button></div>
       </form>
 
     </section>
 
   </div>
-</div>
+</div><script>(()=>{const radios=[...document.querySelectorAll('input[name="tipo_servicio"]')],normal=document.getElementById('normal-service-fields'),oil=document.getElementById('oil-service-fields'),problem=document.getElementById('problema_reportado'),quarts=document.getElementById('cuartos_aceite'),btn=document.getElementById('create-order-btn');function sync(){const quick=radios.find(r=>r.checked)?.value==='aceite';normal.hidden=quick;oil.hidden=!quick;problem.required=!quick;quarts.required=quick;document.querySelectorAll('input[name="tipo_aceite"]').forEach(x=>x.required=quick);btn.innerHTML=quick?'<i class="fa fa-bolt"></i> Crear cambio de aceite':'<i class="fa fa-wrench"></i> Crear reparación';document.querySelectorAll('.service-choice-card').forEach(x=>x.classList.toggle('selected',x.querySelector('input').checked))}radios.forEach(r=>r.addEventListener('change',sync));document.querySelectorAll('.oil-option input').forEach(r=>r.addEventListener('change',()=>document.querySelectorAll('.oil-option').forEach(x=>x.classList.toggle('selected',x.querySelector('input').checked))));sync()})();</script>
