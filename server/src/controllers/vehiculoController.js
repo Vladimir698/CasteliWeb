@@ -144,13 +144,17 @@ async function actualizarMantenimiento(req, res) {
   try {
     const vehiculo = await Vehiculo.findByPk(Number(req.params.id));
     if (!vehiculo) return res.status(404).send('Vehículo no encontrado.');
+    const numeroOpcional = v => v === undefined || v === null || String(v).trim() === '' ? null : Math.max(0, Number(v) || 0);
     const kilometrajeActual = Math.max(0, Number(req.body.kilometraje_actual) || 0);
-    const intervaloAceiteKm = req.body.intervalo_aceite_km ? Math.max(0, Number(req.body.intervalo_aceite_km)) : null;
-    const intervaloAceiteMeses = req.body.intervalo_aceite_meses ? Math.max(0, Number(req.body.intervalo_aceite_meses)) : null;
-    const intervaloFrenosMeses = req.body.intervalo_frenos_meses ? Math.max(0, Number(req.body.intervalo_frenos_meses)) : null;
+    const intervaloAceiteKm = numeroOpcional(req.body.intervalo_aceite_km);
+    const intervaloAceiteMeses = numeroOpcional(req.body.intervalo_aceite_meses);
+    const intervaloRevisionKm = numeroOpcional(req.body.intervalo_revision_km);
+    const ultimaRevisionKm = numeroOpcional(req.body.ultima_revision_km);
+    const ultimoAceiteFecha = req.body.ultimo_aceite_fecha || null;
+    const ultimoFrenosFecha = req.body.ultimo_frenos_fecha || null;
     const sumarMeses = (fechaBase, meses) => {
-      if (!meses) return null;
-      const base = fechaBase ? new Date(fechaBase + 'T12:00:00') : new Date();
+      if (!fechaBase || !meses) return null;
+      const base = new Date(fechaBase + 'T12:00:00');
       base.setMonth(base.getMonth() + meses);
       return base.toISOString().slice(0, 10);
     };
@@ -158,12 +162,17 @@ async function actualizarMantenimiento(req, res) {
       kilometrajeActual,
       intervaloAceiteKm,
       intervaloAceiteMeses,
-      intervaloFrenosMeses,
-      proximoAceiteKm: intervaloAceiteKm ? kilometrajeActual + intervaloAceiteKm : (req.body.proximo_aceite_km ? Number(req.body.proximo_aceite_km) : null),
-      proximoAceiteFecha: intervaloAceiteMeses ? sumarMeses(req.body.fecha_base_aceite, intervaloAceiteMeses) : (req.body.proximo_aceite_fecha || null),
-      proximoFrenosFecha: intervaloFrenosMeses ? sumarMeses(req.body.fecha_base_frenos, intervaloFrenosMeses) : (req.body.proximo_frenos_fecha || null)
+      ultimoAceiteFecha,
+      ultimoFrenosFecha,
+      intervaloFrenosMeses: 12,
+      intervaloRevisionKm,
+      ultimaRevisionKm,
+      proximoAceiteKm: intervaloAceiteKm ? kilometrajeActual + intervaloAceiteKm : null,
+      proximoAceiteFecha: sumarMeses(ultimoAceiteFecha, intervaloAceiteMeses),
+      proximoFrenosFecha: sumarMeses(ultimoFrenosFecha, 12),
+      proximaRevisionKm: intervaloRevisionKm && ultimaRevisionKm !== null ? ultimaRevisionKm + intervaloRevisionKm : null
     });
-    return res.redirect(`/vehiculos/${vehiculo.id}`);
+    return res.redirect(`/vehiculos/${vehiculo.id}#mantenimiento`);
   } catch (error) { console.error(error); return res.status(500).send('No fue posible guardar el mantenimiento.'); }
 }
 
