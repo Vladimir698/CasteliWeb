@@ -23,6 +23,8 @@ module.exports = (sequelize, DataTypes) => {
     otros: { type: DataTypes.DECIMAL(12,2), allowNull: false, field: 'otros', defaultValue: 0 },
     descuento: { type: DataTypes.DECIMAL(12,2), allowNull: false, field: 'descuento', defaultValue: 0 },
     responsableTrabajo: { type: DataTypes.STRING(100), allowNull: true, field: 'responsable_trabajo' },
+    responsableUsuarioId: { type: DataTypes.INTEGER, allowNull: true, field: 'responsable_usuario_id' },
+    destinoServicio: { type: DataTypes.STRING(30), allowNull: true, field: 'destino_servicio' },
     finalizadoPor: { type: DataTypes.STRING(150), allowNull: true, field: 'finalizado_por' },
     gtiEstado: { type: DataTypes.STRING(30), allowNull: true, field: 'gti_estado' },
     gtiReferencia: { type: DataTypes.STRING(120), allowNull: true, field: 'gti_referencia' }
