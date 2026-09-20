@@ -49,3 +49,8 @@ ALTER TABLE vehiculos ADD COLUMN IF NOT EXISTS ultimo_frenos_fecha DATE;
 ALTER TABLE vehiculos ADD COLUMN IF NOT EXISTS intervalo_revision_km INT;
 ALTER TABLE vehiculos ADD COLUMN IF NOT EXISTS ultima_revision_km INT;
 ALTER TABLE vehiculos ADD COLUMN IF NOT EXISTS proxima_revision_km INT;
+
+-- Flujo rápido para servicios de cambio de aceite.
+ALTER TABLE ordenes_trabajo ADD COLUMN IF NOT EXISTS tipo_servicio VARCHAR(30) NOT NULL DEFAULT 'reparacion';
+ALTER TABLE ordenes_trabajo ADD COLUMN IF NOT EXISTS tipo_aceite VARCHAR(80);
+ALTER TABLE ordenes_trabajo ADD COLUMN IF NOT EXISTS cuartos_aceite NUMERIC(6,2);
