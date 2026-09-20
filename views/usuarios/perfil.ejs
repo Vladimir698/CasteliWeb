@@ -19,7 +19,7 @@
     <div class="profile-info-item"><div class="profile-info-icon"><i class="fa fa-id-badge"></i></div><div><small>Rol en el sistema</small><strong><%= rol %></strong></div></div>
   </div>
   <% if(!usuario?.esDesarrollo){ %>
-  <div class="profile-session-row"><div><strong>Finalizar sesión</strong><span>Cierre la sesión cuando termine de utilizar el sistema, especialmente en dispositivos compartidos.</span></div><a href="/logout" class="btn btn-outline-danger profile-logout"><i class="fa fa-sign-out"></i> Cerrar sesión</a></div>
+  <div class="profile-session-row"><div><strong>Finalizar sesión</strong><span>Cierre la sesión cuando termine de utilizar el sistema, especialmente en dispositivos compartidos.</span></div><form method="POST" action="/logout" style="margin:0"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="btn btn-outline-danger profile-logout"><i class="fa fa-sign-out"></i> Cerrar sesión</button></form></div>
   <% }else{ %><div class="profile-dev-note"><i class="fa fa-code"></i><span>Modo de desarrollo activo</span></div><% } %>
 </section>
 </div></div>
