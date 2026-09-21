@@ -39,6 +39,19 @@ exports.actualizar = async(req,res)=>{
   }catch(e){console.error(e);return res.status(500).send('Error actualizando usuario');}
 };
 
+exports.cambiarPassword=async(req,res)=>{
+  try{
+    const u=await db.Usuario.findByPk(Number(req.params.id));
+    if(!u)return res.status(404).send('Usuario no encontrado');
+    const password=String(req.body.password||'');
+    const confirmar=String(req.body.confirmar_password||'');
+    if(password.length<8)return res.status(400).send('La nueva contraseña debe tener al menos 8 caracteres.');
+    if(password!==confirmar)return res.status(400).send('Las contraseñas no coinciden.');
+    await u.update({passwordHash:await bcrypt.hash(password,12)});
+    return res.redirect('/usuarios?msg=password-actualizado');
+  }catch(e){console.error(e);return res.status(500).send('Error cambiando contraseña');}
+};
+
 exports.eliminar=async(req,res)=>{
   try{const u=await db.Usuario.findByPk(Number(req.params.id));if(!u)return res.status(404).send('Usuario no encontrado');if(Number(req.session?.usuario?.id)===Number(u.id))return res.status(400).send('No puede desactivar su propio usuario mientras tiene la sesión iniciada.');await u.update({activo:false});return res.redirect('/usuarios?msg=eliminado');}
   catch(e){console.error(e);return res.status(500).send('Error desactivando usuario');}
