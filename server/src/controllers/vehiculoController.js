@@ -133,6 +133,7 @@ async function verDetalle(req, res) {
     const ordenes = [...(vehiculo.ordenes || [])].sort((a,b) => new Date(b.fechaRecepcion || 0) - new Date(a.fechaRecepcion || 0));
     const estadosCerrados = new Set(['Finalizada','Entregada','Cancelada']);
     const ordenActual = ordenes.find(o => !estadosCerrados.has(o.estado?.nombre)) || null;
+    if (ordenActual?.tipoServicio === 'cotizacion' && ordenActual?.estado?.nombre === 'Cotización') return res.render('ordenes/cotizacion', { titulo: 'Cotización '+vehiculo.placa, vehiculo, ordenes, ordenActual });
     return res.render('vehiculos/detalleVehiculo', { titulo: vehiculo.placa, vehiculo, ordenes, ordenActual });
   } catch (error) {
     console.error(error);
