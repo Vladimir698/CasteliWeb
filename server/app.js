@@ -33,8 +33,8 @@ app.disable('x-powered-by');
 app.set('trust proxy', 1);
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(compression());
-app.use(express.urlencoded({ extended: true, limit: '100kb' }));
-app.use(express.json({ limit: '100kb' }));
+app.use(express.urlencoded({ extended: true, limit: '4mb' }));
+app.use(express.json({ limit: '4mb' }));
 
 if (!process.env.SESSION_SECRET) {
   throw new Error('SESSION_SECRET debe estar configurada');
