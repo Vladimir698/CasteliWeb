@@ -1,7 +1,7 @@
 'use strict';
 
 const { Op } = require('sequelize');
-const { Cliente, Vehiculo, OrdenTrabajo, EstadoOrden, OrdenTrabajoDetalle, OrdenRepuesto } = require('../models');
+const { Cliente, Vehiculo, OrdenTrabajo, EstadoOrden, OrdenTrabajoDetalle, OrdenRepuesto, OrdenFoto } = require('../models');
 
 const normalizarPlaca = placa => String(placa || '').trim().toUpperCase().replace(/\s+/g, '');
 
@@ -126,7 +126,7 @@ async function verDetalle(req, res) {
     const vehiculo = await Vehiculo.findByPk(Number(req.params.id), { include: [
       { model: Cliente, as: 'cliente' },
       { model: OrdenTrabajo, as: 'ordenes', required: false, include: [
-        { model: EstadoOrden, as: 'estado' }, { model: OrdenTrabajoDetalle, as: 'trabajos', required: false }, { model: OrdenRepuesto, as: 'repuestos', required: false }
+        { model: EstadoOrden, as: 'estado' }, { model: OrdenTrabajoDetalle, as: 'trabajos', required: false, include: [{ model: OrdenFoto, as: 'fotos', required: false }] }, { model: OrdenRepuesto, as: 'repuestos', required: false }
       ]}
     ]});
     if (!vehiculo) return res.status(404).send('Vehículo no encontrado.');
