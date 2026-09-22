@@ -20,6 +20,10 @@ module.exports = db => {
   db.OrdenTrabajoDetalle.belongsTo(db.OrdenTrabajo, { foreignKey: 'orden_id', as: 'orden' });
   db.OrdenTrabajoDetalle.belongsTo(db.Usuario, { foreignKey: 'usuario_id', as: 'usuario' });
 
+  db.OrdenTrabajoDetalle.hasMany(db.OrdenFoto, { foreignKey: 'trabajo_id', as: 'fotos' });
+  db.OrdenFoto.belongsTo(db.OrdenTrabajoDetalle, { foreignKey: 'trabajo_id', as: 'trabajo' });
+  db.OrdenFoto.belongsTo(db.Usuario, { foreignKey: 'usuario_id', as: 'usuario' });
+
   db.OrdenTrabajo.hasMany(db.OrdenRepuesto, { foreignKey: 'orden_id', as: 'repuestos' });
   db.OrdenRepuesto.belongsTo(db.OrdenTrabajo, { foreignKey: 'orden_id', as: 'orden' });
 };
