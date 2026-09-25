@@ -1,15 +1,25 @@
-<div class="content">
-  <div class="profile-card">
-    <div class="profile-avatar">
-      <%= usuario.nombre.charAt(0) %><%= usuario.apellidos.charAt(0) %>
-    </div>
-
-    <div>
-      <h3><%= usuario.nombre %> <%= usuario.apellidos %></h3>
-      <p class="text-muted mb-1">Rol: <strong><%= usuario.rol %></strong></p>
-      <a href="/logout" class="btn btn-outline-danger btn-round mt-3">
-        <i class="fa fa-sign-out"></i> Cerrar sesión
-      </a>
+<% const nombre=String(usuario?.nombre||'Usuario'); const login=String(usuario?.usuario||''); const rol=String(usuario?.rol||'Sin rol'); const inicial=nombre.charAt(0).toUpperCase(); %>
+<div class="content"><div class="container-fluid casteli-simple-page profile-page">
+<section class="profile-hero">
+  <div class="profile-identity">
+    <div class="profile-avatar profile-avatar-large"><%= inicial %></div>
+    <div class="profile-copy">
+      <span class="form-eyebrow">CUENTA CASTELI</span>
+      <h1><%= nombre %></h1>
+      <p><% if(login){ %>@<%= login %><span>•</span><% } %><%= rol %></p>
     </div>
   </div>
-</div>
+  <div class="profile-role-badge"><i class="fa fa-shield"></i><span>Sesión activa</span></div>
+</section>
+<section class="simple-sheet profile-details">
+  <div class="sheet-title"><div><span>MI PERFIL</span><h3>Información de la cuenta</h3></div></div>
+  <div class="profile-info-grid">
+    <div class="profile-info-item"><div class="profile-info-icon"><i class="fa fa-user"></i></div><div><small>Nombre</small><strong><%= nombre %></strong></div></div>
+    <div class="profile-info-item"><div class="profile-info-icon"><i class="fa fa-at"></i></div><div><small>Usuario</small><strong><%= login ? '@'+login : 'Sin usuario' %></strong></div></div>
+    <div class="profile-info-item"><div class="profile-info-icon"><i class="fa fa-id-badge"></i></div><div><small>Rol en el sistema</small><strong><%= rol %></strong></div></div>
+  </div>
+  <% if(!usuario?.esDesarrollo){ %>
+  <div class="profile-session-row"><div><strong>Finalizar sesión</strong><span>Cierre la sesión cuando termine de utilizar el sistema, especialmente en dispositivos compartidos.</span></div><form method="POST" action="/logout" style="margin:0"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="btn btn-outline-danger profile-logout"><i class="fa fa-sign-out"></i> Cerrar sesión</button></form></div>
+  <% }else{ %><div class="profile-dev-note"><i class="fa fa-code"></i><span>Modo de desarrollo activo</span></div><% } %>
+</section>
+</div></div>

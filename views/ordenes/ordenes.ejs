@@ -1,116 +1,25 @@
-<div class="content">
-  <div class="container-fluid">
-
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <div>
-        <h2>Órdenes de trabajo</h2>
-        <p class="text-muted">
-          Consulte las órdenes activas del taller.
-        </p>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-body">
-
-        <% if (!ordenes || ordenes.length === 0) { %>
-
-          <div class="text-center py-5">
-            <i
-              class="fa fa-wrench"
-              style="font-size: 40px; color: #d71920;"
-            ></i>
-
-            <h4 class="mt-3">
-              No hay órdenes activas
-            </h4>
-
-            <p class="text-muted">
-              Las nuevas órdenes aparecerán aquí.
-            </p>
-          </div>
-
-        <% } else { %>
-
-          <div class="table-responsive">
-            <table class="table table-hover">
-
-              <thead>
-                <tr>
-                  <th>N.º orden</th>
-                  <th>Vehículo</th>
-                  <th>Cliente</th>
-                  <th>Estado</th>
-                  <th>Fecha</th>
-                  <th>Prioridad</th>
-                  <th></th>
-                </tr>
-              </thead>
-
-              <tbody>
-
-                <% ordenes.forEach(orden => { %>
-
-                  <tr>
-                    <td>
-                      <strong>
-                        <%= orden.numeroOrden %>
-                      </strong>
-                    </td>
-
-                    <td>
-                      <% if (orden.vehiculo) { %>
-                        <%= orden.vehiculo.placa %><br>
-                        <small class="text-muted">
-                          <%= orden.vehiculo.marca %>
-                          <%= orden.vehiculo.modelo %>
-                        </small>
-                      <% } else { %>
-                        Sin vehículo
-                      <% } %>
-                    </td>
-
-                    <td>
-                      <%= orden.vehiculo?.cliente?.nombre || 'Sin cliente' %>
-                    </td>
-
-                    <td>
-                      <span class="badge badge-danger">
-                        <%= orden.estado?.nombre || 'Sin estado' %>
-                      </span>
-                    </td>
-
-                    <td>
-                      <%= orden.fechaRecepcion
-                        ? new Date(orden.fechaRecepcion).toLocaleDateString('es-CR')
-                        : '-'
-                      %>
-                    </td>
-
-                    <td>
-                      <%= orden.prioridad || 'Normal' %>
-                    </td>
-
-                    <td class="text-right">
-                      <a
-                        href="/ordenes/<%= orden.id %>"
-                        class="btn btn-sm btn-outline-danger"
-                      >
-                        Ver
-                      </a>
-                    </td>
-                  </tr>
-
-                <% }) %>
-
-              </tbody>
-            </table>
-          </div>
-
-        <% } %>
-
-      </div>
-    </div>
-
+<% const pendientesCierre=(ordenes||[]).filter(o=>o.estado?.nombre==='Pendiente de cierre'); const cotizaciones=(ordenes||[]).filter(o=>o.estado?.nombre==='Cotización'); const enProceso=(ordenes||[]).length-pendientesCierre.length-cotizaciones.length; const estadoVisual=o=>{if(o.estado?.nombre==='Cotización'){const conValores=(o.repuestos||[]).some(r=>Number(r.precio)>0)||Number(o.manoObra)>0||Number(o.otros)>0;return {texto:conValores?'Cotizado':'En cotización',clase:conValores?'quoted':'quoting'};}return {texto:o.estado?.nombre||'En reparación',clase:o.estado?.nombre==='Pendiente de cierre'?'ready':'repairing'};}; %>
+<div class="content"><div class="container-fluid casteli-simple-page active-repairs-page">
+<section class="simple-sheet active-repairs-sheet">
+  <div class="sheet-title active-repairs-head"><div><span>TALLER</span><h2>Reparaciones activas</h2><p class="text-muted mb-0">Vea rápidamente qué vehículos siguen en proceso y cuáles ya requieren revisión administrativa.</p></div><a href="/vehiculos/buscar" class="btn btn-danger"><i class="fa fa-plus mr-1"></i> Recibir vehículo</a></div>
+  <% if(ordenes?.length){ %>
+  <div class="repair-overview">
+    <div><span class="repair-overview-icon"><i class="fa fa-wrench"></i></span><p><strong><%= enProceso %></strong><small>En proceso</small></p></div>
+    <% if(esAdmin){ %><div class="<%= pendientesCierre.length ? 'needs-attention' : '' %>"><span class="repair-overview-icon"><i class="fa fa-check"></i></span><p><strong><%= pendientesCierre.length %></strong><small>Listas para revisar</small></p></div><% } %>
+    <div><span class="repair-overview-icon"><i class="fa fa-car"></i></span><p><strong><%= ordenes.length %></strong><small>Total activas</small></p></div>
   </div>
-</div>
+  <% if(esAdmin && pendientesCierre.length){ %><div class="repair-ready-banner"><span class="repair-ready-bell"><i class="fa fa-bell"></i></span><div><strong><%= pendientesCierre.length===1 ? 'Hay una reparación terminada' : 'Hay '+pendientesCierre.length+' reparaciones terminadas' %></strong><p><%= pendientesCierre.length===1 ? (pendientesCierre[0].responsableTrabajo||'Un mecánico')+' indicó que terminó su trabajo. Revise la reparación antes de cerrarla.' : 'Los mecánicos ya reportaron estos trabajos. Revise cada reparación antes del cierre administrativo.' %></p></div></div><% } %>
+  <% } %>
+  <% if(!ordenes?.length){ %><div class="repair-empty-state"><span class="action-icon"><i class="fa fa-check"></i></span><h4>Todo al día</h4><p>No hay vehículos actualmente en reparación.</p><a href="/vehiculos/buscar" class="btn btn-dark"><i class="fa fa-plus"></i> Recibir vehículo</a></div>
+  <% } else { %><div class="repair-list"><% ordenes.forEach(o=>{ const listo=o.estado?.nombre==='Pendiente de cierre'; const visual=estadoVisual(o); const esCotizacion=o.estado?.nombre==='Cotización'; %>
+    <article class="active-order-row <%= listo ? 'is-ready' : '' %> <%= esCotizacion ? 'is-quotation' : '' %>">
+      <a href="/vehiculos/<%= o.vehiculo?.id %>" class="active-order-link repair-order-card">
+        <span class="action-icon repair-vehicle-icon"><i class="fa fa-car"></i></span>
+        <div class="repair-order-main"><div class="repair-order-title"><h3><%= o.vehiculo?.placa||'Sin placa' %> <span>·</span> <%= o.vehiculo?.modelo||'' %></h3><% if(listo){ %><span class="repair-ready-pill"><i class="fa fa-check-circle"></i> Trabajo terminado</span><% } %><% if(esCotizacion){ %><span class="repair-stage-pill <%= visual.clase %>"><i class="fa fa-file-text-o"></i> <%= visual.texto %></span><% }else if(!listo){ %><span class="repair-stage-pill repairing"><i class="fa fa-wrench"></i> En reparación</span><% } %></div><p><strong><%= o.vehiculo?.cliente?.nombre||'Sin propietario' %></strong><%= o.problemaReportado ? ' · '+o.problemaReportado : '' %></p><% if(listo){ %><div class="repair-mechanic-note"><i class="fa fa-user"></i> <strong><%= o.responsableTrabajo||'Mecánico' %></strong> reportó que terminó. <span>Toque para revisar y cerrar.</span></div><% } %></div>
+        <div class="repair-card-status"><span class="repair-state <%= visual.clase %>"><%= visual.texto %></span><small><i class="fa fa-calendar-o"></i> <%= new Date(o.fechaRecepcion).toLocaleDateString('es-CR') %></small></div>
+        <i class="fa fa-chevron-right action-arrow"></i>
+      </a>
+      <% if(esAdmin){ %><form action="/ordenes/<%= o.id %>/cancelar" method="POST" class="active-order-cancel" onsubmit="return confirm('¿Cancelar la orden <%= o.numeroOrden %>? Se eliminará completamente y no aparecerá en el historial.')"><button type="submit" class="repair-cancel-button"><i class="fa fa-times"></i> Cancelar</button></form><% } %>
+    </article>
+  <% }) %></div><% } %>
+</section></div></div>

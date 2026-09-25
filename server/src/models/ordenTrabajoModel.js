@@ -16,6 +16,18 @@ module.exports = (sequelize, DataTypes) => {
     prioridad: { type: DataTypes.STRING(20), allowNull: false, field: 'prioridad', defaultValue: 'Normal' },
     problemaReportado: { type: DataTypes.TEXT, allowNull: false, field: 'problema_reportado' },
     observaciones: { type: DataTypes.TEXT, allowNull: true, field: 'observaciones' },
+    tipoServicio: { type: DataTypes.STRING(30), allowNull: false, field: 'tipo_servicio', defaultValue: 'reparacion' },
+    tipoAceite: { type: DataTypes.STRING(80), allowNull: true, field: 'tipo_aceite' },
+    cuartosAceite: { type: DataTypes.DECIMAL(6,2), allowNull: true, field: 'cuartos_aceite' },
+    manoObra: { type: DataTypes.DECIMAL(12,2), allowNull: false, field: 'mano_obra', defaultValue: 0 },
+    otros: { type: DataTypes.DECIMAL(12,2), allowNull: false, field: 'otros', defaultValue: 0 },
+    descuento: { type: DataTypes.DECIMAL(12,2), allowNull: false, field: 'descuento', defaultValue: 0 },
+    responsableTrabajo: { type: DataTypes.STRING(100), allowNull: true, field: 'responsable_trabajo' },
+    responsableUsuarioId: { type: DataTypes.INTEGER, allowNull: true, field: 'responsable_usuario_id' },
+    destinoServicio: { type: DataTypes.STRING(30), allowNull: true, field: 'destino_servicio' },
+    finalizadoPor: { type: DataTypes.STRING(150), allowNull: true, field: 'finalizado_por' },
+    gtiEstado: { type: DataTypes.STRING(30), allowNull: true, field: 'gti_estado' },
+    gtiReferencia: { type: DataTypes.STRING(120), allowNull: true, field: 'gti_referencia' }
   }, {
     tableName: 'ordenes_trabajo',
     freezeTableName: true,
