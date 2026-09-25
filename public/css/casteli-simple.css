@@ -119,3 +119,7 @@ html{scroll-padding-top:92px}.casteli-simple-page,.responsive-form-card{width:10
   .work-photo-gallery a{width:112px;height:84px;overflow:hidden;border-radius:9px;border:1px solid var(--casteli-line);background:#f3f3ef}
   .work-photo-gallery img{display:block;width:112px!important;height:84px!important;max-width:112px!important;max-height:84px!important;object-fit:cover!important;border:0!important;border-radius:9px}
 }
+
+
+/* Guía de recepción visible durante toda la reparación */
+.reception-guide>strong{display:block;font-size:16px;line-height:1.45}.reception-observations{margin-top:11px;padding-top:10px;border-top:1px solid #e3e3de}.reception-observations span{display:block;font-size:11px;color:var(--casteli-muted);margin-bottom:4px}.reception-observations p{margin:0;white-space:pre-wrap;line-height:1.45;color:#444}
