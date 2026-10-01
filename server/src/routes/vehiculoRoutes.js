@@ -9,6 +9,7 @@ router.post('/buscar',c.buscarPorPlaca);
 router.get('/buscar-clientes',c.buscarClientes);
 router.get('/nuevo',c.mostrarFormularioNuevo);
 router.post('/',c.crear);
+router.post('/:id/propietario',c.asignarPropietario);
 router.post('/:id/mantenimiento',c.actualizarMantenimiento);
 router.get('/:id',c.verDetalle);
 module.exports=router;
