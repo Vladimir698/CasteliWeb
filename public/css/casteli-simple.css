@@ -123,3 +123,7 @@ html{scroll-padding-top:92px}.casteli-simple-page,.responsive-form-card{width:10
 
 /* Guía de recepción visible durante toda la reparación */
 .reception-guide>strong{display:block;font-size:16px;line-height:1.45}.reception-observations{margin-top:11px;padding-top:10px;border-top:1px solid #e3e3de}.reception-observations span{display:block;font-size:11px;color:var(--casteli-muted);margin-bottom:4px}.reception-observations p{margin:0;white-space:pre-wrap;line-height:1.45;color:#444}
+
+
+/* Propietario agregado después del registro rápido */
+.vehicle-owner-add{display:inline-flex;align-items:center;gap:7px;margin-top:8px;padding:7px 10px;border:1px solid rgba(255,255,255,.45);border-radius:8px;background:transparent;color:inherit;font-size:12px;font-weight:800;cursor:pointer}.vehicle-owner-add:hover{background:rgba(255,255,255,.12)}.owner-later-card{scroll-margin-top:20px}.owner-later-card .client-search-results{margin-top:7px}.owner-later-card .simple-actions{justify-content:flex-end;margin-top:18px}@media(max-width:650px){.vehicle-owner-add{min-height:42px}.owner-later-card .simple-actions .btn{width:100%}}
