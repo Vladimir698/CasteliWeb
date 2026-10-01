@@ -142,6 +142,44 @@ async function verDetalle(req, res) {
   }
 }
 
+
+async function asignarPropietario(req, res) {
+  const t = await Vehiculo.sequelize.transaction();
+  try {
+    const vehiculo = await Vehiculo.findByPk(Number(req.params.id), { transaction: t });
+    if (!vehiculo) throw new Error('Vehículo no encontrado.');
+
+    const clienteId = Number(req.body.cliente_id) || null;
+    let cliente = clienteId ? await Cliente.findByPk(clienteId, { transaction: t }) : null;
+    if (clienteId && !cliente) throw new Error('El propietario seleccionado ya no existe.');
+
+    if (!cliente) {
+      const nombre = String(req.body.nombre_cliente || '').trim();
+      const identificacion = String(req.body.identificacion_cliente || '').trim();
+      const telefono = String(req.body.telefono_cliente || '').trim();
+      const tipoCliente = req.body.tipo_cliente === 'empresa' ? 'empresa' : 'persona';
+      if (!nombre) throw new Error('Indique el nombre del propietario o seleccione un cliente existente.');
+      cliente = await Cliente.create({
+        tipoCliente,
+        nombre,
+        identificacion: identificacion || null,
+        telefono: telefono || null,
+        correo: tipoCliente === 'empresa' ? String(req.body.correo_cliente || '').trim() || null : null,
+        codigoTrabajo: tipoCliente === 'empresa' ? String(req.body.codigo_trabajo || '').trim() || null : null,
+        activo: true
+      }, { transaction: t });
+    }
+
+    await vehiculo.update({ clienteId: cliente.id }, { transaction: t });
+    await t.commit();
+    return res.redirect('/vehiculos/' + vehiculo.id + '#propietario');
+  } catch (error) {
+    if (!t.finished) await t.rollback();
+    console.error(error);
+    return res.status(400).send('No fue posible agregar el propietario: ' + error.message);
+  }
+}
+
 async function actualizarMantenimiento(req, res) {
   try {
     const vehiculo = await Vehiculo.findByPk(Number(req.params.id));
@@ -178,4 +216,4 @@ async function actualizarMantenimiento(req, res) {
   } catch (error) { console.error(error); return res.status(500).send('No fue posible guardar el mantenimiento.'); }
 }
 
-module.exports = { mostrarBusqueda, buscarPorPlaca, mostrarFormularioNuevo, buscarClientes, crear, verDetalle, actualizarMantenimiento };
+module.exports = { mostrarBusqueda, buscarPorPlaca, mostrarFormularioNuevo, buscarClientes, crear, verDetalle, asignarPropietario, actualizarMantenimiento };
