@@ -8,6 +8,7 @@ module.exports = (sequelize, DataTypes) => {
     identificacion: { type: DataTypes.STRING(30), allowNull: true, field: 'identificacion' },
     telefono: { type: DataTypes.STRING(30), allowNull: true, field: 'telefono' },
     correo: { type: DataTypes.STRING(150), allowNull: true, field: 'correo' },
+    codigoTrabajo: { type: DataTypes.STRING(100), allowNull: true, field: 'codigo_trabajo' },
     direccion: { type: DataTypes.TEXT, allowNull: true, field: 'direccion' },
     notas: { type: DataTypes.TEXT, allowNull: true, field: 'notas' },
     activo: { type: DataTypes.BOOLEAN, allowNull: false, field: 'activo', defaultValue: true },

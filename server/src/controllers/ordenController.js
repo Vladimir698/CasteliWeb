@@ -1,277 +1,36 @@
 'use strict';
-
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
 const { Op } = require('sequelize');
+const { sequelize,Cliente,Vehiculo,OrdenTrabajo,EstadoOrden,OrdenTrabajoDetalle,OrdenRepuesto,OrdenFoto }=require('../models');
+const PHOTO_DIR=process.env.PHOTO_UPLOAD_DIR||path.join(process.cwd(),'uploads','orden-fotos');
+const asegurarDirectorioFotos=()=>fs.mkdirSync(PHOTO_DIR,{recursive:true});
+const volver=(res,vehiculoId,anchor='reparacion-actual')=>res.redirect(`/vehiculos/${vehiculoId}#${anchor}`);
+async function listarActivas(req,res){try{const ordenes=await OrdenTrabajo.findAll({include:[{model:Vehiculo,as:'vehiculo',include:[{model:Cliente,as:'cliente'}]},{model:EstadoOrden,as:'estado'},{model:OrdenRepuesto,as:'repuestos',required:false}],order:[['fechaRecepcion','DESC']]});return res.render('ordenes/ordenes',{titulo:'Lista de reparaciones',ordenes:ordenes.filter(o=>!['Finalizada','Entregada','Cancelada'].includes(o.estado?.nombre))});}catch(e){console.error(e);return res.status(500).send(e.message);}}
+async function crearCotizacion(req,res){try{const vehiculo=await Vehiculo.findByPk(Number(req.params.vehiculoId));if(!vehiculo)return res.status(404).send('Vehículo no encontrado.');const activa=await OrdenTrabajo.findOne({where:{vehiculoId:vehiculo.id},include:[{model:EstadoOrden,as:'estado'}],order:[['fechaRecepcion','DESC']]});if(activa&&!['Finalizada','Entregada','Cancelada'].includes(activa.estado?.nombre))return res.redirect('/vehiculos/'+vehiculo.id);const [estado]=await EstadoOrden.findOrCreate({where:{nombre:'Cotización'},defaults:{nombre:'Cotización'}});await OrdenTrabajo.create({numeroOrden:await generarNumeroOrden(),vehiculoId:vehiculo.id,estadoId:estado.id,usuarioRecepcionaId:null,kilometrajeIngreso:Number(vehiculo.kilometrajeActual)||0,problemaReportado:'Cotización',prioridad:'Normal',tipoServicio:'cotizacion'});return volver(res,vehiculo.id,'cotizacion');}catch(e){console.error(e);return res.status(500).send('No fue posible crear la cotización.');}}
+async function continuarCotizacion(req,res){try{const orden=await OrdenTrabajo.findByPk(Number(req.params.id),{include:[{model:EstadoOrden,as:'estado'}]});if(!orden)return res.status(404).send('Cotización no encontrada.');if(orden.tipoServicio!=='cotizacion'||orden.estado?.nombre!=='Cotización')return res.status(400).send('Esta cotización ya fue convertida o no está disponible.');const estado=await EstadoOrden.findOne({where:{nombre:'Recibida'}});if(!estado)return res.status(500).send('Falta el estado Recibida.');await orden.update({tipoServicio:'reparacion',estadoId:estado.id,problemaReportado:'Reparación aprobada desde cotización',fechaRecepcion:new Date()});return volver(res,orden.vehiculoId,'reparacion-actual');}catch(e){console.error(e);return res.status(500).send('No fue posible continuar con la cotización.');}}
+async function mostrarFormularioNuevo(req,res){const vehiculo=await Vehiculo.findByPk(Number(req.params.vehiculoId),{include:[{model:Cliente,as:'cliente'}]});if(!vehiculo)return res.status(404).send('Vehículo no encontrado.');return res.render('ordenes/nuevaOrden',{titulo:'Nueva reparación',vehiculo,orden:{kilometraje_ingreso:vehiculo.kilometrajeActual},errores:[]});}
+async function crear(req,res){try{const vehiculo=await Vehiculo.findByPk(Number(req.params.vehiculoId));if(!vehiculo)return res.status(404).send('Vehículo no encontrado.');const km=Number(req.body.kilometraje_ingreso),tipoServicio=req.body.tipo_servicio==='aceite'?'aceite':'reparacion';let problema=String(req.body.problema_reportado||'').trim();const tipoAceite=tipoServicio==='aceite'?String(req.body.tipo_aceite||'').trim():null;const cuartosAceite=tipoServicio==='aceite'?Number(req.body.cuartos_aceite):null;const incluyeFiltro=tipoServicio==='aceite'&&req.body.incluir_filtro==='1';if(tipoServicio==='aceite')problema='Cambio de aceite';if(!Number.isFinite(km)||km<0||!problema)return res.status(400).send('Kilometraje y motivo de ingreso son obligatorios.');if(tipoServicio==='aceite'&&(!['Aceite Sintético para Motor','Aceite Semisintético para Motor'].includes(tipoAceite)||!Number.isFinite(cuartosAceite)||cuartosAceite<=0))return res.status(400).send('Seleccione el tipo de aceite e indique la cantidad de cuartos.');const estado=await EstadoOrden.findOne({where:{nombre:'Recibida'}});if(!estado)return res.status(500).send('Falta el estado Recibida.');const orden=await OrdenTrabajo.create({numeroOrden:await generarNumeroOrden(),vehiculoId:vehiculo.id,estadoId:estado.id,usuarioRecepcionaId:null,kilometrajeIngreso:km,problemaReportado:problema,observaciones:String(req.body.observaciones||'').trim()||null,prioridad:'Normal',tipoServicio,tipoAceite,cuartosAceite});if(tipoServicio==='aceite'){await OrdenTrabajoDetalle.create({ordenId:orden.id,usuarioId:null,descripcion:'Cambio de aceite de motor',estado:'realizado',fechaFin:new Date()});await OrdenRepuesto.create({ordenId:orden.id,descripcion:tipoAceite,cantidad:cuartosAceite,precio:0,descuento:0});if(incluyeFiltro)await OrdenRepuesto.create({ordenId:orden.id,descripcion:'Filtro de aceite',cantidad:1,precio:0,descuento:0});}await vehiculo.update({kilometrajeActual:km});return volver(res,vehiculo.id,tipoServicio==='aceite'?'repuestos':'reparacion-actual');}catch(e){console.error(e);return res.status(500).send(e.message);}}
+async function verDetalle(req,res){try{const orden=await OrdenTrabajo.findByPk(Number(req.params.id),{include:[{model:Vehiculo,as:'vehiculo',include:[{model:Cliente,as:'cliente'}]},{model:EstadoOrden,as:'estado'},{model:OrdenTrabajoDetalle,as:'trabajos',required:false},{model:OrdenRepuesto,as:'repuestos',required:false}]});if(!orden)return res.status(404).send('Orden no encontrada.');return res.render('ordenes/historialDetalle',{titulo:'Historial '+orden.numeroOrden,orden});}catch(e){console.error(e);return res.status(500).send('No fue posible cargar el detalle de la visita.');}}
+async function agregarTrabajo(req,res){try{const orden=await OrdenTrabajo.findByPk(Number(req.params.id));if(!orden)return res.status(404).send('Orden no encontrada.');const tipo=req.body.tipo==='realizado'?'realizado':'detectado';const entrada=String(req.body.descripcion||'').replace(/\r/g,'').trim();const lineas=entrada.split('\n').map(x=>x.replace(/^[-•✓*]\s*/,'').trim()).filter(Boolean);if(lineas.length)await OrdenTrabajoDetalle.bulkCreate(lineas.map(descripcion=>({ordenId:orden.id,usuarioId:null,descripcion,estado:tipo})));return volver(res,orden.vehiculoId,tipo==='detectado'?'lista-reparacion':'trabajo-realizado');}catch(e){console.error(e);return res.status(500).send('No fue posible guardar la lista.');}}
+async function eliminarTrabajo(req,res){try{const trabajo=await OrdenTrabajoDetalle.findByPk(Number(req.params.trabajoId));if(!trabajo)return res.status(404).send('Trabajo no encontrado.');const orden=await OrdenTrabajo.findByPk(trabajo.ordenId);if(!orden)return res.status(404).send('Orden no encontrada.');const anchor=trabajo.estado==='realizado'?'trabajo-realizado':'lista-reparacion';await trabajo.destroy();return volver(res,orden.vehiculoId,anchor);}catch(e){console.error(e);return res.status(500).send('No fue posible quitar el trabajo.');}}
+async function editarTrabajo(req,res){try{const trabajo=await OrdenTrabajoDetalle.findByPk(Number(req.params.trabajoId));if(!trabajo)return res.status(404).send('Trabajo no encontrado.');const orden=await OrdenTrabajo.findByPk(trabajo.ordenId);if(!orden)return res.status(404).send('Orden no encontrada.');const descripcion=String(req.body.descripcion||'').trim();if(!descripcion)return res.status(400).send('La descripción no puede quedar vacía.');await trabajo.update({descripcion});return volver(res,orden.vehiculoId,trabajo.estado==='detectado'?'lista-reparacion':'trabajo-realizado');}catch(e){console.error(e);return res.status(500).send('No fue posible editar el trabajo.');}}
+async function cambiarEstadoTrabajo(req,res){try{const trabajo=await OrdenTrabajoDetalle.findByPk(Number(req.params.trabajoId));if(!trabajo)return res.status(404).send('Trabajo no encontrado.');const orden=await OrdenTrabajo.findByPk(trabajo.ordenId);if(!orden)return res.status(404).send('Orden no encontrada.');const realizado=req.body.realizado==='1';await trabajo.update({estado:realizado?'realizado':'detectado',fechaFin:realizado?new Date():null});return volver(res,orden.vehiculoId,'lista-reparacion');}catch(e){console.error(e);return res.status(500).send('No fue posible actualizar el trabajo.');}}
 
-const {
-  Cliente,
-  Vehiculo,
-  OrdenTrabajo,
-  EstadoOrden
-} = require('../models');
-
-async function listarActivas(req, res) {
-  try {
-    const estadosActivos = [
-      'Recibida',
-      'Diagnóstico',
-      'Esperando aprobación',
-      'Esperando repuestos',
-      'Reparación',
-      'Control de calidad',
-      'Lista para facturar'
-    ];
-
-    const ordenes = await OrdenTrabajo.findAll({
-      include: [
-        {
-          model: Vehiculo,
-          as: 'vehiculo',
-          include: [
-            {
-              model: Cliente,
-              as: 'cliente'
-            }
-          ]
-        },
-        {
-          model: EstadoOrden,
-          as: 'estado',
-          required: true,
-          where: {
-            nombre: {
-              [Op.in]: estadosActivos
-            }
-          }
-        }
-      ],
-      order: [
-        ['fechaRecepcion', 'DESC']
-      ]
-    });
-
-    return res.render('ordenes/ordenes', {
-      titulo: 'Órdenes activas',
-      ordenes
-    });
-  } catch (error) {
-    console.error('ERROR AL CARGAR ÓRDENES:', error);
-
-    return res.status(500).send(
-      `No fue posible cargar las órdenes: ${error.message}`
-    );
-  }
-}
-
-async function mostrarFormularioNuevo(req, res) {
-  try {
-    const vehiculoId = Number(req.params.vehiculoId);
-
-    if (!Number.isInteger(vehiculoId) || vehiculoId <= 0) {
-      return res.status(400).send('Identificador de vehículo inválido.');
-    }
-
-    const vehiculo = await Vehiculo.findByPk(vehiculoId, {
-      include: [
-        {
-          model: Cliente,
-          as: 'cliente'
-        }
-      ]
-    });
-
-    if (!vehiculo) {
-      return res.status(404).send('Vehículo no encontrado.');
-    }
-
-    return res.render('ordenes/nuevaOrden', {
-      titulo: 'Nueva orden de trabajo',
-      vehiculo,
-      orden: {},
-      errores: []
-    });
-  } catch (error) {
-    console.error('Error al abrir orden:', error);
-
-    return res.status(500).send(
-      'No fue posible abrir el formulario.'
-    );
-  }
-}
-
-async function crear(req, res) {
-  try {
-    const vehiculoId = Number(req.params.vehiculoId);
-
-    const {
-      kilometraje_ingreso,
-      nivel_combustible,
-      problema_reportado,
-      observaciones
-    } = req.body;
-
-    if (!Number.isInteger(vehiculoId) || vehiculoId <= 0) {
-      return res.status(400).send('Identificador de vehículo inválido.');
-    }
-
-    const vehiculo = await Vehiculo.findByPk(vehiculoId, {
-      include: [
-        {
-          model: Cliente,
-          as: 'cliente'
-        }
-      ]
-    });
-
-    if (!vehiculo) {
-      return res.status(404).send('Vehículo no encontrado.');
-    }
-
-    const errores = [];
-    const kilometraje = Number(kilometraje_ingreso);
-
-    if (
-      kilometraje_ingreso === undefined ||
-      kilometraje_ingreso === '' ||
-      !Number.isFinite(kilometraje) ||
-      kilometraje < 0
-    ) {
-      errores.push('Debe indicar un kilometraje válido.');
-    }
-
-    if (!problema_reportado?.trim()) {
-      errores.push(
-        'Debe indicar el problema reportado por el cliente.'
-      );
-    }
-
-    if (errores.length) {
-      return res.status(400).render('ordenes/nuevaOrden', {
-        titulo: 'Nueva orden de trabajo',
-        vehiculo,
-        orden: req.body,
-        errores
-      });
-    }
-
-    const estadoRecibida = await EstadoOrden.findOne({
-      where: {
-        nombre: 'Recibida'
-      }
-    });
-
-    if (!estadoRecibida) {
-      return res.status(500).send(
-        'No existe el estado inicial "Recibida".'
-      );
-    }
-
-    const numeroOrden = await generarNumeroOrden();
-
-    const orden = await OrdenTrabajo.create({
-      numeroOrden,
-      vehiculoId,
-      estadoId: estadoRecibida.id,
-
-      usuarioRecepcionaId: null,
-
-      kilometrajeIngreso: kilometraje,
-      nivelCombustible:
-        nivel_combustible?.trim() || null,
-
-      problemaReportado:
-        problema_reportado.trim(),
-
-      observaciones:
-        observaciones?.trim() || null,
-
-      prioridad: 'Normal'
-    });
-
-    await vehiculo.update({
-      kilometrajeActual: kilometraje
-    });
-
-    return res.redirect(`/ordenes/${orden.id}`);
-  } catch (error) {
-    console.error('Error al crear orden:', error);
-
-    return res.status(500).send(
-      `No fue posible crear la orden de trabajo: ${error.message}`
-    );
-  }
-}
-
-async function verDetalle(req, res) {
-  try {
-    const ordenId = Number(req.params.id);
-
-    if (!Number.isInteger(ordenId) || ordenId <= 0) {
-      return res.status(400).send('Identificador de orden inválido.');
-    }
-
-    const orden = await OrdenTrabajo.findByPk(ordenId, {
-      include: [
-        {
-          model: Vehiculo,
-          as: 'vehiculo',
-          include: [
-            {
-              model: Cliente,
-              as: 'cliente'
-            }
-          ]
-        },
-        {
-          model: EstadoOrden,
-          as: 'estado'
-        }
-      ]
-    });
-
-    if (!orden) {
-      return res.status(404).send('Orden no encontrada.');
-    }
-
-    return res.render('ordenes/detalleOrden', {
-      titulo: orden.numeroOrden,
-      orden
-    });
-  } catch (error) {
-    console.error('Error al cargar orden:', error);
-
-    return res.status(500).send(
-      `No fue posible cargar la orden: ${error.message}`
-    );
-  }
-}
-
-async function generarNumeroOrden() {
-  const anio = new Date().getFullYear();
-
-  const ultimaOrden = await OrdenTrabajo.findOne({
-    where: {
-      numeroOrden: {
-        [Op.like]: `OT-${anio}-%`
-      }
-    },
-    order: [
-      ['id', 'DESC']
-    ]
-  });
-
-  let consecutivo = 1;
-
-  if (ultimaOrden) {
-    const partes = ultimaOrden.numeroOrden.split('-');
-    consecutivo = Number(partes[2] || 0) + 1;
-  }
-
-  return `OT-${anio}-${String(consecutivo).padStart(4, '0')}`;
-}
-
-module.exports = {
-  listarActivas,
-  mostrarFormularioNuevo,
-  crear,
-  verDetalle
-};
+async function agregarFotoTrabajo(req,res){try{const trabajo=await OrdenTrabajoDetalle.findByPk(Number(req.params.trabajoId));if(!trabajo)return res.status(404).send('Trabajo no encontrado.');const orden=await OrdenTrabajo.findByPk(trabajo.ordenId);if(!orden)return res.status(404).send('Orden no encontrada.');const raw=String(req.body.foto||'');const m=raw.match(/^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/);if(!m)return res.status(400).send('La fotografía no es válida.');const buffer=Buffer.from(m[2],'base64');if(!buffer.length||buffer.length>5*1024*1024)return res.status(400).send('La fotografía debe pesar máximo 5 MB.');const ext=m[1]==='image/png'?'png':m[1]==='image/webp'?'webp':'jpg';const archivo=crypto.randomUUID()+'.'+ext;asegurarDirectorioFotos();fs.writeFileSync(path.join(PHOTO_DIR,archivo),buffer,{flag:'wx'});await OrdenFoto.create({trabajoId:trabajo.id,usuarioId:req.session?.usuario?.id||null,archivo,nombreOriginal:String(req.body.nombre_original||'foto-reparacion').slice(0,255),mimeType:m[1]});return volver(res,orden.vehiculoId,trabajo.estado==='realizado'?'trabajo-realizado':'lista-reparacion');}catch(e){console.error(e);return res.status(500).send('No fue posible guardar la fotografía.');}}
+async function verFotoTrabajo(req,res){try{const foto=await OrdenFoto.findByPk(Number(req.params.fotoId));if(!foto)return res.status(404).send('Fotografía no encontrada.');const file=path.join(PHOTO_DIR,path.basename(foto.archivo));if(!fs.existsSync(file))return res.status(404).send('El archivo de la fotografía no está disponible.');res.type(foto.mimeType);res.set('Cache-Control','private, max-age=86400');return res.sendFile(file);}catch(e){console.error(e);return res.status(500).send('No fue posible abrir la fotografía.');}}
+async function eliminarFotoTrabajo(req,res){try{const foto=await OrdenFoto.findByPk(Number(req.params.fotoId),{include:[{model:OrdenTrabajoDetalle,as:'trabajo'}]});if(!foto)return res.status(404).send('Fotografía no encontrada.');const trabajo=foto.trabajo,orden=trabajo?await OrdenTrabajo.findByPk(trabajo.ordenId):null;if(!orden)return res.status(404).send('Orden no encontrada.');const file=path.join(PHOTO_DIR,path.basename(foto.archivo));await foto.destroy();try{if(fs.existsSync(file))fs.unlinkSync(file)}catch(err){console.error('No se pudo borrar archivo de foto:',err)}return volver(res,orden.vehiculoId,trabajo.estado==='realizado'?'trabajo-realizado':'lista-reparacion');}catch(e){console.error(e);return res.status(500).send('No fue posible eliminar la fotografía.');}}
+async function agregarRepuesto(req,res){try{const orden=await OrdenTrabajo.findByPk(Number(req.params.id));if(!orden)return res.status(404).send('Orden no encontrada.');const descripcion=String(req.body.descripcion||'').trim();if(descripcion)await OrdenRepuesto.create({ordenId:orden.id,descripcion,cantidad:Math.max(Number(req.body.cantidad)||1,0.01),precio:Math.max(Number(req.body.precio)||0,0),descuento:0});return volver(res,orden.vehiculoId,'repuestos');}catch(e){console.error(e);return res.status(500).send('No fue posible agregar el repuesto.');}}
+async function agregarRepuestoDesdeTrabajo(req,res){try{const trabajo=await OrdenTrabajoDetalle.findByPk(Number(req.params.trabajoId));if(!trabajo)return res.status(404).send('Trabajo no encontrado.');const orden=await OrdenTrabajo.findByPk(trabajo.ordenId);if(!orden)return res.status(404).send('Orden no encontrada.');const existe=await OrdenRepuesto.findOne({where:{ordenId:orden.id,descripcion:trabajo.descripcion}});if(!existe)await OrdenRepuesto.create({ordenId:orden.id,descripcion:trabajo.descripcion,cantidad:1,precio:0,descuento:0});return volver(res,orden.vehiculoId,'repuestos');}catch(e){console.error(e);return res.status(500).send('No fue posible pasar el elemento a repuestos.');}}
+async function agregarTodosRepuestos(req,res){try{const orden=await OrdenTrabajo.findByPk(Number(req.params.id));if(!orden)return res.status(404).send('Orden no encontrada.');const [trabajos,repuestos]=await Promise.all([OrdenTrabajoDetalle.findAll({where:{ordenId:orden.id}}),OrdenRepuesto.findAll({where:{ordenId:orden.id}})]);const existentes=new Set(repuestos.map(r=>String(r.descripcion||'').trim().toLowerCase()));const nuevos=trabajos.filter(t=>!existentes.has(String(t.descripcion||'').trim().toLowerCase())).map(t=>({ordenId:orden.id,descripcion:t.descripcion,cantidad:1,precio:0,descuento:0}));if(nuevos.length)await OrdenRepuesto.bulkCreate(nuevos);return volver(res,orden.vehiculoId,'repuestos');}catch(e){console.error(e);return res.status(500).send('No fue posible agregar todos los elementos al cobro.');}}
+async function actualizarRepuesto(req,res){try{const repuesto=await OrdenRepuesto.findByPk(Number(req.params.repuestoId));if(!repuesto)return res.status(404).send('Repuesto no encontrado.');const orden=await OrdenTrabajo.findByPk(repuesto.ordenId);if(!orden)return res.status(404).send('Orden no encontrada.');const descripcion=String(req.body.descripcion||'').trim(),cantidad=Number(req.body.cantidad),precio=Number(req.body.precio);if(!descripcion||!Number.isFinite(cantidad)||cantidad<=0||!Number.isFinite(precio)||precio<0)return res.status(400).send('Descripción, cantidad y precio no son válidos.');await repuesto.update({descripcion,cantidad,precio});return volver(res,orden.vehiculoId,'repuestos');}catch(e){console.error(e);return res.status(500).send('No fue posible actualizar el repuesto.');}}
+async function limpiarTrabajos(req,res){try{const orden=await OrdenTrabajo.findByPk(Number(req.params.id));if(!orden)return res.status(404).send('Orden no encontrada.');await OrdenTrabajoDetalle.destroy({where:{ordenId:orden.id}});return volver(res,orden.vehiculoId,'lista-reparacion');}catch(e){console.error(e);return res.status(500).send('No fue posible limpiar la lista.');}}
+async function limpiarCobro(req,res){try{const orden=await OrdenTrabajo.findByPk(Number(req.params.id));if(!orden)return res.status(404).send('Orden no encontrada.');await sequelize.transaction(async t=>{await OrdenRepuesto.destroy({where:{ordenId:orden.id},transaction:t});await orden.update({manoObra:0,otros:0,descuento:0},{transaction:t});});return volver(res,orden.vehiculoId,'repuestos');}catch(e){console.error(e);return res.status(500).send('No fue posible limpiar el cobro.');}}
+async function limpiarDetalle(req,res){try{const orden=await OrdenTrabajo.findByPk(Number(req.params.id));if(!orden)return res.status(404).send('Orden no encontrada.');await sequelize.transaction(async t=>{await OrdenTrabajoDetalle.destroy({where:{ordenId:orden.id},transaction:t});await OrdenRepuesto.destroy({where:{ordenId:orden.id},transaction:t});await orden.update({manoObra:0,otros:0,descuento:0},{transaction:t});});return volver(res,orden.vehiculoId,'reparacion-actual');}catch(e){console.error(e);return res.status(500).send('No fue posible limpiar el detalle.');}}
+async function actualizarTotales(req,res){const orden=await OrdenTrabajo.findByPk(Number(req.params.id));if(!orden)return res.status(404).send('Orden no encontrada.');await orden.update({manoObra:Number(req.body.mano_obra)||0,otros:Number(req.body.otros)||0,descuento:Math.max(Number(req.body.dekra)||0,0)});return volver(res,orden.vehiculoId,'cuenta-taller');}
+async function cancelar(req,res){try{const orden=await OrdenTrabajo.findByPk(Number(req.params.id));if(!orden)return res.status(404).send('Orden no encontrada.');const estadoActual=await EstadoOrden.findByPk(orden.estadoId);if(['Finalizada','Entregada'].includes(estadoActual?.nombre))return res.status(400).send('Una orden finalizada o entregada no puede cancelarse desde reparaciones activas.');await sequelize.transaction(async t=>{await OrdenTrabajoDetalle.destroy({where:{ordenId:orden.id},transaction:t});await OrdenRepuesto.destroy({where:{ordenId:orden.id},transaction:t});await orden.destroy({transaction:t});});return res.redirect('/ordenes');}catch(e){console.error(e);return res.status(500).send('No fue posible cancelar y eliminar la orden.');}}
+async function reportarTerminado(req,res){try{const orden=await OrdenTrabajo.findByPk(Number(req.params.id));if(!orden)return res.status(404).send('Orden no encontrada.');const sesion=req.session?.usuario;const rol=String(sesion?.rol||'').trim().toLowerCase();if(rol!=='mecanico')return res.status(403).send('Esta acción corresponde a usuarios mecánicos.');const responsable=String(sesion?.nombre||sesion?.usuario||'Mecánico').trim();const estado=await EstadoOrden.findOrCreate({where:{nombre:'Pendiente de cierre'},defaults:{nombre:'Pendiente de cierre'}});const esEmerson=String(sesion?.usuario||'').trim().toLowerCase()==='emerson'||responsable.toLowerCase()==='emerson';await orden.update({estadoId:estado[0].id,responsableTrabajo:responsable,responsableUsuarioId:sesion?.id||null,destinoServicio:esEmerson?'Emerson':'Taller',fechaFin:null,finalizadoPor:null});return res.redirect('/ordenes');}catch(e){console.error(e);return res.status(500).send('No fue posible avisar que la reparación está terminada.');}}
+async function finalizar(req,res){try{const orden=await OrdenTrabajo.findByPk(Number(req.params.id));if(!orden)return res.status(404).send('Orden no encontrada.');const sesion=req.session?.usuario;const rol=String(sesion?.rol||'').trim().toLowerCase();if(rol!=='administrador')return res.status(403).send('Solo un administrador puede cerrar la reparación.');const estadoActual=await EstadoOrden.findByPk(orden.estadoId);let responsable=String(orden.responsableTrabajo||'').trim();if(estadoActual?.nombre!=='Pendiente de cierre'||!responsable)responsable='Taller';const destinoServicio=String(orden.destinoServicio||'').trim()|| (responsable.toLowerCase()==='emerson'?'Emerson':'Taller');const estado=await EstadoOrden.findOrCreate({where:{nombre:'Finalizada'},defaults:{nombre:'Finalizada'}});const finalizadoPor=sesion?.nombre||sesion?.usuario||'Administrador';await orden.update({estadoId:estado[0].id,fechaFin:new Date(),responsableTrabajo:responsable,destinoServicio,finalizadoPor});return res.redirect('/ordenes');}catch(e){console.error(e);return res.status(500).send('No fue posible finalizar la reparación.');}}
+async function generarNumeroOrden(){const anio=new Date().getFullYear();const ultima=await OrdenTrabajo.findOne({where:{numeroOrden:{[Op.like]:`OT-${anio}-%`}},order:[['id','DESC']]});const n=ultima?Number(ultima.numeroOrden.split('-')[2]||0)+1:1;return `OT-${anio}-${String(n).padStart(4,'0')}`;}
+module.exports={listarActivas,crearCotizacion,continuarCotizacion,mostrarFormularioNuevo,crear,verDetalle,agregarTrabajo,eliminarTrabajo,editarTrabajo,cambiarEstadoTrabajo,agregarFotoTrabajo,verFotoTrabajo,eliminarFotoTrabajo,agregarRepuesto,agregarRepuestoDesdeTrabajo,agregarTodosRepuestos,actualizarRepuesto,limpiarTrabajos,limpiarCobro,limpiarDetalle,actualizarTotales,cancelar,reportarTerminado,finalizar};

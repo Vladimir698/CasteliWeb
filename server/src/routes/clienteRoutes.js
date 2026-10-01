@@ -1,51 +1,15 @@
-  'use strict';
+'use strict';
 
-  const express = require('express');
-  const clienteController = require('../controllers/clienteController');
+const express = require('express');
+const clienteController = require('../controllers/clienteController');
+const { requiereLogin, soloAdmin } = require('../middleware/authMiddleware');
 
-  const {
-    requiereLogin,
-    permitirRoles
-  } = require('../middleware/authMiddleware');
+const router = express.Router();
+router.use(requiereLogin);
 
-  const router = express.Router();
+router.get('/', soloAdmin, clienteController.listar);
+router.get('/nuevo', soloAdmin, clienteController.mostrarFormularioNuevo);
+router.post('/', soloAdmin, clienteController.crear);
+router.get('/:id', soloAdmin, clienteController.verDetalle);
 
-  router.use(requiereLogin);
-
-  router.get(
-    '/',
-    permitirRoles(
-      'administrador',
-      'mecanico_administrativo'
-    ),
-    clienteController.listar
-  );
-
-  router.get(
-    '/nuevo',
-    permitirRoles(
-      'administrador',
-      'mecanico_administrativo'
-    ),
-    clienteController.mostrarFormularioNuevo
-  );
-
-  router.post(
-    '/',
-    permitirRoles(
-      'administrador',
-      'mecanico_administrativo'
-    ),
-    clienteController.crear
-  );
-
-  router.get(
-    '/:id',
-    permitirRoles(
-      'administrador',
-      'mecanico_administrativo'
-    ),
-    clienteController.verDetalle
-  );
-
-  module.exports = router;
+module.exports = router;
