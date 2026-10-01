@@ -75,21 +75,22 @@ async function crear(req, res) {
       const identificacion = String(req.body.identificacion_cliente || '').trim();
       const telefono = String(req.body.telefono_cliente || '').trim();
       const tipoCliente = req.body.tipo_cliente === 'empresa' ? 'empresa' : 'persona';
+      const hayDatosPropietario = Boolean(nombre || identificacion || telefono || String(req.body.correo_cliente || '').trim() || String(req.body.codigo_trabajo || '').trim());
 
-      if (!nombre || !telefono) throw new Error('Complete nombre y teléfono del propietario.');
-
-      // Un vehículo nuevo sin propietario seleccionado SIEMPRE crea el propietario
-      // escrito en el formulario. No se sustituye silenciosamente por otro cliente
-      // que tenga una identificación coincidente.
-      cliente = await Cliente.create({
-        tipoCliente,
-        nombre,
-        identificacion: identificacion || null,
-        telefono,
-        correo: tipoCliente === 'empresa' ? String(req.body.correo_cliente || '').trim() || null : null,
-        codigoTrabajo: tipoCliente === 'empresa' ? String(req.body.codigo_trabajo || '').trim() || null : null,
-        activo: true
-      }, { transaction: t });
+      // El propietario es opcional al recibir el vehículo. Si el mecánico todavía
+      // no conoce sus datos, el vehículo se registra con cliente_id NULL.
+      if (hayDatosPropietario) {
+        if (!nombre) throw new Error('Si desea registrar el propietario ahora, indique al menos su nombre.');
+        cliente = await Cliente.create({
+          tipoCliente,
+          nombre,
+          identificacion: identificacion || null,
+          telefono: telefono || null,
+          correo: tipoCliente === 'empresa' ? String(req.body.correo_cliente || '').trim() || null : null,
+          codigoTrabajo: tipoCliente === 'empresa' ? String(req.body.codigo_trabajo || '').trim() || null : null,
+          activo: true
+        }, { transaction: t });
+      }
     } else if (cliente.tipoCliente === 'empresa') {
       const codigoTrabajo = String(req.body.codigo_trabajo || '').trim();
       if (codigoTrabajo && codigoTrabajo !== (cliente.codigoTrabajo || '')) {
@@ -98,7 +99,7 @@ async function crear(req, res) {
     }
 
     const vehiculo = await Vehiculo.create({
-      clienteId: cliente.id,
+      clienteId: cliente ? cliente.id : null,
       placa,
       marca: 'No indicada',
       modelo,
